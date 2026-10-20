@@ -28,6 +28,12 @@
     { action: 'samsung', icon: 'home', label: 'Accueil Samsung' }
   ];
 
+  var THEMES = [
+    { id: 'aurore', label: 'Aurore' },
+    { id: 'coucher', label: 'Coucher de soleil' },
+    { id: 'ocean', label: 'Océan' }
+  ];
+
   var CAROUSEL = { w: 250, open: 720, gap: 24 };
   var VIEW_W = 1920 - 240 - 110;
   var PEEK = 110; // part visible de la carte voisine quand la rangée défile // zone de contenu : 240 px à gauche (rail + respiration), 110 px à droite
@@ -53,6 +59,7 @@
     rail: document.getElementById('rail'),
     hints: document.getElementById('hints'),
     badge: document.getElementById('modeBadge'),
+    hello: document.getElementById('clockHello'),
     time: document.getElementById('clockTime'),
     date: document.getElementById('clockDate'),
     toast: document.getElementById('toast'),
@@ -106,6 +113,7 @@
       all: apps.map(appTile),
       system: [
         actionTile('edit', state.mode === 'browse' ? 'Personnaliser' : 'Terminer', 'star', toggleEdit),
+        actionTile('theme', 'Thème : ' + currentTheme().label, 'tv', cycleTheme),
         actionTile('status', 'État des services', 'grid', showStatus),
         actionTile('samsung', 'Accueil Samsung', 'home', quitToSamsung),
         actionTile('reset', 'Réinitialiser', 'gear', confirmReset)
@@ -194,6 +202,33 @@
     return path.charAt(0) === '/' ? 'file://' + path : '';
   }
 
+  /** #rrggbb → rgba(r,g,b,a) */
+  function hexA(hex, a) {
+    var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '');
+    if (!m) return 'rgba(255,255,255,' + a + ')';
+    return 'rgba(' + parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) + ',' + a + ')';
+  }
+
+  /** Teinte vive et stable pour une app sans illustration (dérivée de son nom). */
+  function hueOf(label) {
+    var x = 2166136261; // FNV-1a : deux noms voisins donnent des teintes éloignées
+    for (var i = 0; i < label.length; i++) { x ^= label.charCodeAt(i); x = Math.imul(x, 16777619); }
+    return Math.round(((x >>> 0) * 137.508) % 360);
+  }
+
+  /** Variables de couleur posées une seule fois sur la tuile : fond, halo de focus. */
+  function paint(node, tile) {
+    if (tile.art) {
+      node.style.setProperty('--ring', hexA(tile.accent, 0.45));
+      node.style.setProperty('--tint', tile.accent);
+    } else {
+      var hue = hueOf(tile.label);
+      node.style.setProperty('--tint-a', 'hsl(' + hue + ',85%,62%)');
+      node.style.setProperty('--tint-b', 'hsl(' + ((hue + 40) % 360) + ',72%,40%)');
+      node.style.setProperty('--ring', 'hsla(' + hue + ',90%,70%,0.45)');
+    }
+  }
+
   function artNode(tile, align) {
     var art = h('div', 'art');
     if (tile.art) art.innerHTML = A.svg(tile.art, tile.accent, align);
@@ -211,6 +246,7 @@
   function renderCarouselTile(tile) {
     var node = h('div', 'tile tile-carousel is-' + tile.status);
     node.setAttribute('data-tid', tile.tid);
+    paint(node, tile);
     node.appendChild(artNode(tile, 'xMaxYMid'));
     node.appendChild(h('div', 'shade'));
     if (tile.status === 'missing') node.appendChild(h('div', 'tag', 'Non détectée'));
@@ -235,6 +271,7 @@
   function renderCardTile(tile, def) {
     var node = h('div', 'tile tile-' + def.size + ' is-' + tile.status + ' kind-' + tile.kind);
     node.setAttribute('data-tid', tile.tid);
+    paint(node, tile);
     var card = h('div', 'card');
     card.appendChild(artNode(tile));
 
@@ -248,7 +285,6 @@
       card.appendChild(img);
     }
     if (!tile.art) card.appendChild(h('div', 'mono', monogram(tile.label)));
-    card.appendChild(h('div', 'shade'));
     card.appendChild(h('div', 'name', tile.label));
 
     if (tile.status === 'missing') card.appendChild(h('div', 'tag', 'Non détectée'));
@@ -342,7 +378,9 @@
     if (state.sheet) hints = [['←  →', 'Choisir'], ['OK', 'Valider'], ['Retour', 'Fermer']];
     else if (state.mode === 'move') hints = [['←  →', 'Déplacer'], ['OK', 'Terminer']];
     else if (state.mode === 'edit') hints = [['OK', 'Options'], ['A', 'Terminer'], ['Retour', 'Terminer']];
-    else hints = [['OK', 'Ouvrir'], ['A', 'Personnaliser'], ['Retour', 'Accueil Samsung']];
+    else hints = null; // en navigation, l'aide reste masquée (elle recouvrirait les rangées)
+    el.hints.hidden = !hints;
+    if (!hints) return;
 
     el.hints.innerHTML = '';
     hints.forEach(function (x) {
@@ -472,6 +510,25 @@
     }
     actions.push({ label: 'Fermer', run: closeSheet });
     return actions;
+  }
+
+  function currentTheme() {
+    for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === state.prefs.theme) return THEMES[i];
+    return THEMES[0];
+  }
+
+  function applyTheme() {
+    var t = currentTheme();
+    THEMES.forEach(function (x) { document.body.classList.toggle('theme-' + x.id, x.id === t.id); });
+  }
+
+  function cycleTheme() {
+    var i = THEMES.indexOf(currentTheme());
+    state.prefs.theme = THEMES[(i + 1) % THEMES.length].id;
+    S.save(state.prefs);
+    applyTheme();
+    rebuild();
+    toast('Thème : ' + currentTheme().label);
   }
 
   function quitToSamsung() {
@@ -722,6 +779,8 @@
     el.time.textContent = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
     var d = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
     el.date.textContent = d.charAt(0).toUpperCase() + d.slice(1);
+    var hr = now.getHours();
+    el.hello.textContent = hr < 5 ? 'Bonne nuit' : hr < 18 ? 'Bonjour' : 'Bonsoir';
     setTimeout(tickClock, 60000 - (now.getSeconds() * 1000 + now.getMilliseconds()) + 50);
   }
 
@@ -739,6 +798,7 @@
     fitStage();
     window.addEventListener('resize', fitStage);
     var savedFocus = state.prefs.lastFocus; // le premier rendu (avant découverte) l'écraserait
+    applyTheme();
     state.services = C.resolve([]);
     buildRows();
     state.nav = N.createNav(state.rows.map(function (r) { return r.items.length; }));
@@ -754,6 +814,8 @@
     // Retour depuis une autre application : focus restauré, liste rafraîchie (local, sans réseau).
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) { S.save(state.prefs); return; }
+      // Avant la fin de la 1re détection, le focus n'est que provisoire : la détection en cours s'en charge.
+      if (state.discovery.reason === 'pending') return;
       state.launching = false;
       if (lastFocused) lastFocused.classList.remove('is-launching');
       discover(currentTile() && currentTile().tid);

@@ -5,7 +5,7 @@
 A minimal personal launcher for a **Samsung QE55Q70BATXXC (2022 QLED)** TV, firmware
 **T-PTMDEUC-1720.7**, running **Tizen 6.5** (Chromium M85 web engine).
 
-**"Console"** style: an icon rail on the left, a large **games carousel** whose selected
+**"Aurora"** design (premium, colourful, three themes: Aurora, Sunset, Ocean): a floating glass icon rail on the left, a large **games carousel** whose selected
 card expands (Luna, Xbox, Gaming Hub), and carousels for **Streaming**, **My apps**
 (favorites), **All apps** and **TV Hub settings**. Every known service gets an original
 abstract illustration (no official logos). Fully remote-controlled, and kept light for
@@ -44,7 +44,7 @@ the TV's ARM processor (no full-screen animated layers).
   ones; the neighbouring card always peeks in.
 - **Rail**: ↑/↓ previews a section (the page scrolls), → or OK enters it. The last icon
   (house) returns to the Samsung home screen.
-- **TV Hub settings**: Customize, **Service status** (what was detected, with the real
+- **TV Hub settings**: Customize, **Theme**, **Service status** (what was detected, with the real
   app IDs), Samsung home, Reset (clears TV Hub's own preferences only).
 
 ## Layout

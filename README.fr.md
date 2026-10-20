@@ -5,7 +5,7 @@
 Lanceur personnel minimaliste pour **Samsung QE55Q70BATXXC (QLED 2022)**, firmware
 **T-PTMDEUC-1720.7**, plateforme **Tizen 6.5** (moteur web Chromium M85).
 
-Style **« Console »** : rail d'icônes à gauche, grand **carrousel de jeux** dont la carte
+Design **« Aurore »** (premium et coloré, trois thèmes : Aurore, Coucher de soleil, Océan) : rail d'icônes en verre flottant à gauche, grand **carrousel de jeux** dont la carte
 sélectionnée s'élargit (Luna, Xbox, Gaming Hub), carrousels **Streaming**, **Mes
 applications** (favoris), **Toutes les applications**, et **Réglages TV Hub**. Chaque
 service connu a une illustration abstraite originale (aucun logo officiel). Navigation
@@ -42,7 +42,7 @@ service connu a une illustration abstraite originale (aucun logo officiel). Navi
   révéler les suivantes ; la carte voisine dépasse toujours un peu.
 - **Rail** : ↑/↓ prévisualise la section (la page défile), → ou OK y entre. La dernière
   icône (maison) revient à l'accueil Samsung.
-- **Réglages TV Hub** : Personnaliser, **État des services** (ce qui a été détecté, avec
+- **Réglages TV Hub** : Personnaliser, **Thème**, **État des services** (ce qui a été détecté, avec
   les identifiants réels), Accueil Samsung, Réinitialiser (efface uniquement les
   préférences de TV Hub).
 

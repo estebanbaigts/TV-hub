@@ -63,6 +63,8 @@
     // Attend la fin de la détection des applications (et non un délai fixe).
     for (var t = 0; t < 60 && !(window.__tvhub && window.__tvhub.discovery.reason !== 'pending'); t++) await wait(50);
     await wait(100);
+    R.trace.push('départ : découverte=' + JSON.stringify(window.__tvhub.discovery.reason) + ' apps=' + window.__tvhub.discovery.apps.length +
+      ' pos=' + JSON.stringify(window.__tvhub.nav.get()) + ' focus=' + focused() + ' zone=' + window.__tvhub.zone + ' visible=' + !document.hidden);
     check('focus initial sur la première app disponible (Xbox)', focused() === 'svc:xbox', focused());
     check('Luna absente affichée « Non détectée »', !!document.querySelector('[data-tid="svc:luna"].is-missing'));
     var all = rowTids('all');
@@ -153,6 +155,15 @@
     check('ordre enregistré localement', saved.order.streaming[1] === 'svc:netflix');
     press(KEY.BACK);
     check('Retour quitte la personnalisation', !document.body.classList.contains('mode-edit'));
+
+    // Thème : Réglages → « Thème » change le fond et est mémorisé.
+    var g6 = 0;
+    while (rowTids('system').indexOf(focused()) === -1 && g6++ < 10) press(KEY.D);
+    while (focused() !== 'act:theme' && g6++ < 20) press(KEY.R);
+    var before = document.body.className;
+    press(KEY.OK);
+    var savedTheme = JSON.parse(localStorage.getItem('tvhub.prefs.v1') || '{}').theme;
+    check('thème : changement appliqué et mémorisé', document.body.className !== before && document.body.classList.contains('theme-' + savedTheme), document.body.className);
 
     // Performance : 3000 appuis.
     var t0 = performance.now();

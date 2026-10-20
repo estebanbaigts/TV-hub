@@ -24,7 +24,7 @@ ne fonctionne pas sur Mac Apple Silicon et Tizen Studio n'est pas installé (voi
   publics, aucune balise `access` ; pas de CSS/JS récent incompatible avec Chromium M85
   (`inset`, `?.`, `??`, `aspect-ratio`, flou…).
 
-### Bout en bout dans le navigateur — `dev/?e2e=1` : 37/37
+### Bout en bout dans le navigateur — `dev/?e2e=1` : 38/38
 
 | Comportement | Résultat |
 |---|---|
@@ -36,6 +36,7 @@ ne fonctionne pas sur Mac Apple Silicon et Tizen Studio n'est pas installé (voi
 | Rail : ← au bord gauche, aperçu de section ↑/↓, retour → sur la tuile mémorisée | OK |
 | Carrousel : la carte de jeu focalisée est dépliée | OK |
 | Carrousels : la dernière carte devient entièrement visible, la première sort à gauche, retour exact au début | OK |
+| Thème (Réglages → Thème) : fond changé et mémorisé | OK |
 | Lancement avec l'**identifiant découvert** (Netflix) | OK |
 | Retour d'une app (événement `visibilitychange`) → **focus restauré** | OK |
 | Échec de lancement → message d'erreur avec la cause (`NotFoundError`) | OK |

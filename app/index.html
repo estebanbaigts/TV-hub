@@ -8,7 +8,7 @@
   <title>TV Hub</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="theme-aurore">
   <div class="stage" id="stage">
 
     <nav class="rail" id="rail" aria-label="Sections"></nav>
@@ -16,6 +16,7 @@
     <div class="clock">
       <div class="mode-badge" id="modeBadge" hidden>Personnalisation</div>
       <div>
+        <div class="hello" id="clockHello"></div>
         <div class="time" id="clockTime">--:--</div>
         <div class="date" id="clockDate"></div>
       </div>
@@ -24,9 +25,7 @@
     <main class="viewport" id="viewport">
       <div class="rows" id="rows"></div>
     </main>
-    <div class="leftfade" aria-hidden="true"></div>
     <div class="topfade" aria-hidden="true"></div>
-    <div class="bottomfade" aria-hidden="true"></div>
 
     <footer class="hints" id="hints"></footer>
 
