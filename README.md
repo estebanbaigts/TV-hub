@@ -8,7 +8,7 @@ remote. Built and tested on a Samsung QE55Q70BATXXC (2022).
 
 ![Home](docs/captures/accueil.png)
 
-▶ **[Watch the 1-minute explainer video](docs/video/accueil-plus.mp4)** (English, with voice-over)
+▶ **[Watch the trailer](docs/video/accueil-plus.mp4)** (20 s)
 
 > **Installed and running on a Samsung QE55Q70BATXXC** (version 2.0.0). Screenshots come from
 > the desktop simulation, with fake apps. The interface itself is in French.
