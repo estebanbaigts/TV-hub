@@ -21,6 +21,8 @@ rm -rf "$ROOT/build" && mkdir -p "$STAGE" "$DIST"
 # Seul le dossier app/ est empaqueté (la simulation dev/ n'en fait jamais partie).
 cp -R "$ROOT/app/." "$STAGE/"
 find "$STAGE" -name '.DS_Store' -delete
+# Fichiers propres à LG webOS : inutiles dans le paquet Samsung.
+rm -f "$STAGE/appinfo.json" "$STAGE/icon-80.png" "$STAGE/icon-130.png"
 
 # Localisation de la CLI Tizen (Tizen Studio).
 TIZEN_BIN="${TIZEN_BIN:-}"

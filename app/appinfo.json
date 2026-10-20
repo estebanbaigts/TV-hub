@@ -1,0 +1,12 @@
+{
+  "id": "com.estebanbaigts.accueilplus",
+  "version": "2.0.0",
+  "vendor": "estebanbaigts",
+  "type": "web",
+  "main": "index.html",
+  "title": "Accueil+",
+  "icon": "icon-80.png",
+  "largeIcon": "icon-130.png",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true
+}

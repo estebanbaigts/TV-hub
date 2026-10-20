@@ -136,6 +136,30 @@ test('filtre : doublons de nom fusionnés (deux paquets CANAL+)', function () {
   var out = Catalog.userApps([{ id: 'QmpwflxWdt.CanalPlusLauncher', name: 'CANAL+' }, { id: 'guMmq95nKK.CanalPlusLauncher', name: 'CANAL+' }]);
   assert.strictEqual(out.length, 1);
 });
+test('toutes les TV Samsung : service connu gardé quel que soit son identifiant', function () {
+  assert.ok(Catalog.isUserApp({ id: 'com.samsung.tv.netflix2019', name: 'Netflix' }), 'Netflix préinstallé autre modèle');
+  assert.ok(Catalog.isUserApp({ id: 'org.tizen.disneyplus', name: 'Disney+' }));
+  assert.ok(!Catalog.isUserApp({ id: 'com.samsung.tv.store', name: 'Paramètres avancés' }), 'app interne inconnue écartée');
+});
+test('LG : toute app visible gardée (pas de filtre Samsung)', function () {
+  var out = Catalog.userApps([{ id: 'com.webos.app.molotov', name: 'Molotov' }, { id: 'x', name: '' }], 'webos');
+  assert.deepStrictEqual(out.map(function (a) { return a.name; }), ['Molotov']);
+});
+test('LG : identifiants de repli marqués non vérifiés, uniquement pour des services du catalogue', function () {
+  var apps = Catalog.lgFallbackApps();
+  assert.ok(apps.length >= 5);
+  apps.forEach(function (a) { assert.strictEqual(a.unverified, true); assert.ok(Catalog.isKnownService(a.name), a.name); });
+  var r = Catalog.resolve(apps);
+  assert.strictEqual(r.filter(function (x) { return x.key === 'netflix'; })[0].app.id, 'netflix');
+  assert.strictEqual(r.filter(function (x) { return x.key === 'canal'; })[0].app, null);
+});
+test('touche Retour : Samsung, LG, Échap ; Retour arrière pas dans un champ', function () {
+  var Pl = require(path.join(APP, 'js/platform.js'));
+  [10009, 461, 27, 8].forEach(function (k) { assert.ok(Pl.isBack(k), k); });
+  assert.ok(!Pl.isBack(8, true));
+  assert.ok(!Pl.isBack(13));
+  assert.strictEqual(Pl.name(), 'none');
+});
 test('catalogue : TF1+, M6+, france.tv reconnus', function () {
   var r = Catalog.resolve([{ id: 'a', name: 'TF1+ : Streaming, TV en Direct' }, { id: 'b', name: 'M6+ : Streaming et Tv Replay' }, { id: 'c', name: 'france.tv' }]);
   ['tf1', 'm6', 'francetv'].forEach(function (k) { assert.ok(r.filter(function (s) { return s.key === k; })[0].app, k); });

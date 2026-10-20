@@ -45,6 +45,10 @@
     geforcenow: 'Selon le modèle, GeForce NOW est proposé dans Samsung Gaming Hub ou en application.',
     gaminghub: 'Gaming Hub est une section du système Samsung : elle n’est pas toujours lançable par une application tierce.'
   };
+  // Gaming Hub est propre à Samsung ; les remarques Gaming Hub aussi.
+  var PLAT = P.name(), L = P.labels();
+  if (PLAT === 'webos') { GROUPS.games = ['luna', 'xbox', 'geforcenow']; GAME_NOTE = {}; }
+
   var SECTIONS = [
     { id: 'home', label: 'Accueil' }, { id: 'streaming', label: 'Streaming' }, { id: 'games', label: 'Jeux' },
     { id: 'fun', label: 'Musique et divertissement' }, { id: 'all', label: 'Toutes les applications' }, { id: 'settings', label: 'Réglages' }
@@ -57,7 +61,7 @@
   // ---------------------------------------------------------------------------
 
   var S = {
-    tizen: P.hasTizen(), detect: 'pending', detectErr: null, installed: [], svc: {},
+    tizen: P.available(), detect: 'pending', detectErr: null, installed: [], svc: {},
     section: 'home', area: 'rows', tab: 0, mem: {}, nav: null, rows: [],
     modal: null, launching: false, history: [], booting: true
   };
@@ -94,9 +98,14 @@
   function detect(done) {
     P.listApps(function (res) {
       if (res.ok) {
-        S.installed = C.userApps(res.apps);
+        S.installed = C.userApps(res.apps, PLAT);
         buildServices(S.installed);
         S.detect = 'ok';
+      } else if (PLAT === 'webos') {
+        // LG : liste refusée aux apps tierces → identifiants publics, vérifiés au lancement.
+        buildServices(C.lgFallbackApps());
+        S.detect = 'partial';
+        S.detectErr = res.reason;
       } else {
         S.detect = res.reason === 'no-tizen' ? 'no-tizen' : 'error';
         S.detectErr = res.reason;
@@ -108,6 +117,7 @@
   function svcState(s) {
     if (s.app) return 'ready';
     if (S.detect === 'no-tizen') return 'desktop';
+    if (S.detect === 'partial') return 'missing';
     if (S.detect === 'error') return 'unknown';
     if (S.detect === 'pending') return 'pending';
     return 'missing';
@@ -265,7 +275,8 @@
     if (S.section === 'all' && !S.rows.length) {
       var msg = document.createElement('div'); msg.className = 'empty'; msg.style.top = '0px';
       msg.textContent = S.detect === 'no-tizen'
-        ? 'La liste des applications n’est disponible que sur le téléviseur (API Tizen absente dans ce navigateur).'
+        ? 'La liste des applications n’est disponible que sur le téléviseur (aucune TV détectée dans ce navigateur).'
+        : S.detect === 'partial' ? 'Cette TV LG ne permet pas à une application de lister les applications installées. Utilisez ' + L.home.replace('l’', 'l’') + ' pour les autres.'
         : S.detect === 'error' ? 'Le téléviseur n’a pas fourni la liste des applications (' + S.detectErr + ').'
           : S.detect === 'pending' ? 'Recherche des applications…' : 'Aucune application trouvée.';
       host.appendChild(msg);
@@ -397,7 +408,7 @@
 
   function actionFor(s) {
     var st = svcState(s);
-    if (st === 'ready') return { on: true, text: 'Ouvrir ' + s.label };
+    if (st === 'ready') return { on: true, text: 'Ouvrir ' + s.label + (s.app.unverified ? ' (présence vérifiée au lancement)' : '') };
     if (st === 'desktop') return { on: false, text: 'Aperçu sur ordinateur : lancement possible uniquement sur la TV' };
     if (st === 'pending') return { on: false, text: 'Recherche de ' + s.label + ' sur la TV…' };
     if (st === 'unknown') return { on: false, text: 'Liste des applications indisponible · OK pour les détails' };
@@ -423,8 +434,8 @@
       return heroSection('Toutes les applications', 'Accueil+', S.detect === 'ok' ? 'Applications installées, par ordre alphabétique. OK pour ouvrir.' : '');
     }
     if (S.section === 'settings') {
-      heroSection('Réglages', 'Accueil+', 'Accueil+ ne remplace pas l’accueil Samsung et ne démarre pas seul à l’allumage : aucune API publique ne le permet.');
-      return setText(el.note, 'Accès le plus rapide : épinglez Accueil+ en tête de l’accueil Samsung, puis Home → OK.');
+      heroSection('Réglages', 'Accueil+', 'Accueil+ ne remplace pas ' + L.home + ' et ne démarre pas seul à l’allumage : aucune API publique ne le permet.');
+      return setText(el.note, 'Accès le plus rapide : épinglez Accueil+ en tête de ' + L.home + ', puis Home → OK.');
     }
     if (!it) {
       var sec = SECTIONS[S.tab];
@@ -556,20 +567,30 @@
       }
     }, function (err) {
       S.launching = false;
+      var sv = key && S.svc[key];
+      if (sv && sv.app && sv.app.unverified) {
+        // LG, identifiant supposé : la TV dit non → service marqué absent, sans faux espoir.
+        sv.app = null; refreshSection();
+        toast(label + ' non détectée', true, 3200);
+        return sheet(label + ' non détectée', label + ' ne semble pas installée sur cette TV (' + err.name + ').\nInstallez-la depuis ' + L.store + ', puis relancez Accueil+.');
+      }
       toast('Impossible d’ouvrir ' + label, true, 3200);
       sheet('Impossible d’ouvrir ' + label, 'Le téléviseur a refusé le lancement (' + err.name + (err.message ? ' : ' + err.message : '') + ').\n' +
-        'Vérifiez que l’application est à jour dans Samsung Apps, puis réessayez.');
+        'Vérifiez que l’application est à jour dans ' + L.store + ', puis réessayez.');
     });
   }
 
   function activateService(s) {
     var st = svcState(s);
     if (st === 'ready') return launchApp(s.app.id, s.label, s.key);
-    if (st === 'desktop') return sheet(s.label, 'Aperçu sur ordinateur : l’API Tizen n’existe pas dans ce navigateur, rien ne peut être lancé.\n' +
+    if (st === 'desktop') return sheet(s.label, 'Aperçu sur ordinateur : aucune TV détectée dans ce navigateur, rien ne peut être lancé.\n' +
       'Sur le téléviseur, ' + s.label + ' s’ouvrira si elle est installée.');
     if (st === 'pending') return toast('Recherche des applications en cours…');
     if (st === 'unknown') return sheet(s.label, 'Le téléviseur n’a pas fourni la liste des applications (' + S.detectErr + ').\nAccueil+ ne lance donc rien à l’aveugle.');
-    sheet(s.label + ' non détectée', s.missing || (s.label + ' n’apparaît pas parmi les applications installées.\nInstallez-la depuis Samsung Apps, puis relancez Accueil+.'));
+    var why = S.detect === 'partial'
+      ? s.label + ' n’est pas lançable directement sur cette TV LG (identifiant inconnu).\nOuvrez-la depuis ' + L.home + '.'
+      : s.label + ' n’apparaît pas parmi les applications installées.\nInstallez-la depuis ' + L.store + ', puis relancez Accueil+.';
+    sheet(s.label + ' non détectée', (PLAT === 'tizen' && s.missing) || why);
   }
 
   function activate() {
@@ -594,7 +615,9 @@
   }
 
   function statusText() {
-    if (S.detect === 'no-tizen') return 'Aperçu sur ordinateur : API Tizen absente, aucune application détectable.';
+    if (S.detect === 'no-tizen') return 'Aperçu sur ordinateur : aucune TV détectée, aucune application détectable.';
+    if (S.detect === 'partial') return 'TV LG : la liste des applications est refusée par le système.\nLes grandes applications sont essayées par leur identifiant public, vérifié au lancement.\n\n' +
+      Object.keys(BRAND).filter(function (k) { return S.svc[k]; }).map(function (k) { var x = S.svc[k]; return (x.app ? '? ' : '— ') + x.label + (x.app ? '  (' + x.app.id + ', non vérifié)' : '  non lançable'); }).join('\n');
     if (S.detect === 'error') return 'Liste des applications indisponible (' + S.detectErr + ').';
     var lines = [];
     Object.keys(BRAND).forEach(function (k) { var s = S.svc[k]; lines.push((s.app ? '✓ ' : '— ') + s.label + (s.app ? '  (' + s.app.id + ')' : '  non détectée')); });
@@ -609,8 +632,8 @@
     }
     if (S.area === 'rows') { S.area = 'tabs'; S.tab = 0; return applyFocus(); }
     if (S.section !== 'home') return openSection('home', { noHistory: true });
-    // Accueil, focus sur les onglets : quitter → l'accueil Samsung reprend la main.
-    if (!P.exit()) toast('Sur la TV, Retour ici revient à l’accueil Samsung');
+    // Accueil, focus sur les onglets : quitter → l'accueil de la TV reprend la main.
+    if (!P.exit()) toast('Sur la TV, Retour ici revient à ' + L.home);
   }
 
   // ---------------------------------------------------------------------------
@@ -622,12 +645,12 @@
     var handled = true;
     if (S.modal === 'input') {
       if (k === KEYS.ENTER && !e.repeat) { savePin(); e.preventDefault(); }
-      else if (k === KEYS.BACK || k === KEYS.ESC) { closeSheet(); e.preventDefault(); }
+      else if (P.isBack(k, true)) { closeSheet(); e.preventDefault(); }
       return; // les autres touches vont au champ de saisie
     }
     if (S.modal) {
       if (k === KEYS.ENTER && !e.repeat) closeSheet();
-      else if (k === KEYS.BACK || k === KEYS.ESC || k === KEYS.BACKSPACE) closeSheet();
+      else if (P.isBack(k)) closeSheet();
       e.preventDefault();
       return;
     }
@@ -646,7 +669,7 @@
       } else if (S.nav.move('down')) applyFocus();
     } else if (k === KEYS.ENTER) {
       if (!e.repeat) activate();
-    } else if (k === KEYS.BACK || k === KEYS.ESC || k === KEYS.BACKSPACE) {
+    } else if (P.isBack(k)) {
       back();
     } else handled = false;
     if (handled) e.preventDefault(); // pas de défilement natif de la page

@@ -115,18 +115,29 @@
   var VISIBLE_PREINSTALLED = ['org.tizen.netflix-app', 'org.tizen.primevideo', 'org.tizen.browser', 'com.samsung.tv.ariavideo'];
   var UTILITY_NAMES = [/^e-?manual$/i, /security center/i, /services d.int[ée]r[êe]t g[ée]n[ée]ral/i, /^bixby$/i];
 
-  function isUserApp(app) {
-    if (!app || !app.id || !app.name) return false;
-    if (!STORE_ID.test(app.id) && VISIBLE_PREINSTALLED.indexOf(app.id) === -1) return false;
-    for (var i = 0; i < UTILITY_NAMES.length; i++) if (UTILITY_NAMES[i].test(app.name.trim())) return false;
-    return true;
+  /** Nom reconnu comme un service du catalogue (identifiant quelconque : varie selon le modèle). */
+  function isKnownService(name) {
+    for (var i = 0; i < SERVICES.length; i++) {
+      for (var j = 0; j < SERVICES[i].match.length; j++) if (SERVICES[i].match[j].test(name)) return true;
+    }
+    return false;
   }
 
-  /** Filtre les apps et retire les doublons de nom (ex. deux paquets « CANAL+ »). */
-  function userApps(apps) {
+  function isUserApp(app) {
+    if (!app || !app.id || !app.name) return false;
+    var name = app.name.trim();
+    for (var i = 0; i < UTILITY_NAMES.length; i++) if (UTILITY_NAMES[i].test(name)) return false;
+    // Toutes les TV Samsung : apps du Store, préinstallées relevées, ou tout service connu
+    // reconnu par son nom (les identifiants préinstallés changent d'un modèle à l'autre).
+    return STORE_ID.test(app.id) || VISIBLE_PREINSTALLED.indexOf(app.id) !== -1 || isKnownService(name);
+  }
+
+  /** Filtre les apps (Samsung) et retire les doublons de nom (ex. deux paquets « CANAL+ »). */
+  function userApps(apps, platform) {
     var seen = {};
     return apps.filter(function (a) {
-      if (!isUserApp(a)) return false;
+      // Le filtre par identifiant est propre à Samsung ; sur LG, toute app visible est gardée.
+      if (platform === 'webos' ? !(a && a.id && a.name) : !isUserApp(a)) return false;
       var k = a.name.trim().toLowerCase();
       if (seen[k]) return false;
       seen[k] = true;
@@ -156,7 +167,26 @@
     });
   }
 
-  var api = { SERVICES: SERVICES, resolve: resolve, isUserApp: isUserApp, userApps: userApps };
+  /*
+   * LG webOS : la liste des applications installées est souvent refusée aux apps tierces.
+   * En repli seulement, identifiants publics LG Content Store des grandes applications
+   * (non garantis selon le modèle). Ils sont marqués « non vérifiés » : un lancement refusé
+   * par la TV affiche « non détectée », jamais un faux succès.
+   */
+  var LG_FALLBACK = {
+    netflix: 'netflix', prime: 'amazon', youtube: 'youtube.leanback.v4',
+    disney: 'com.disney.disneyplus-prod', appletv: 'com.apple.appletv', spotify: 'spotify-beehive'
+  };
+
+  /** Applications « supposées » pour LG quand la liste est refusée. */
+  function lgFallbackApps() {
+    return SERVICES.filter(function (s) { return LG_FALLBACK[s.key]; }).map(function (s) {
+      return { id: LG_FALLBACK[s.key], name: s.label, iconPath: '', unverified: true };
+    });
+  }
+
+  var api = { SERVICES: SERVICES, resolve: resolve, isUserApp: isUserApp, userApps: userApps,
+    isKnownService: isKnownService, lgFallbackApps: lgFallbackApps, LG_FALLBACK: LG_FALLBACK };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TVCatalog = api;
 })(this);

@@ -35,7 +35,23 @@
 
   function enabled() { return !!root.TMDB_KEY; }
 
+  /* Repli XMLHttpRequest pour les vieux moteurs sans fetch (ex. LG webOS 3). */
+  function xhrJSON(url) {
+    return new Promise(function (resolve, reject) {
+      var x = new root.XMLHttpRequest();
+      x.open('GET', url, true);
+      x.timeout = 8000;
+      x.onload = function () {
+        if (x.status < 200 || x.status >= 300) return reject(new Error('HTTP ' + x.status));
+        try { resolve(JSON.parse(x.responseText)); } catch (e) { reject(e); }
+      };
+      x.onerror = x.ontimeout = function () { reject(new Error('réseau')); };
+      x.send();
+    });
+  }
+
   function fetchJSON(url) {
+    if (typeof root.fetch !== 'function') return xhrJSON(url);
     var ctl = root.AbortController ? new root.AbortController() : null;
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 8000);
     return root.fetch(url, { credentials: 'omit', signal: ctl ? ctl.signal : undefined }).then(function (r) {

@@ -9,6 +9,6 @@ import re
 src = re.sub(r"<title>(.*?)</title>", r"<title>\1 (simulation)</title>", src, count=1)
 first = '<script src="js/platform.js"></script>'
 assert first in src
-src = src.replace(first, '<script src="../dev/tizen-mock.js"></script>\n  <script src="../dev/e2e.js"></script>\n  ' + first, 1)
+src = src.replace(first, '<script src="../dev/tizen-mock.js"></script>\n  <script src="../dev/webos-mock.js"></script>\n  <script src="../dev/e2e.js"></script>\n  ' + first, 1)
 open(os.path.join(root, "dev", "index.html"), "w", encoding="utf-8").write(src)
 print("dev/index.html régénéré")

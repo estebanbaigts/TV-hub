@@ -2,14 +2,25 @@
 
 **English** · [Français](README.fr.md)
 
-A personal, Apple TV–inspired home screen for a **Samsung QE55Q70BATXXC** (2022 QLED,
-Tizen 6.5, firmware 1720.7). All your streaming, cloud gaming and music services in one
-place, driven entirely with the remote.
+A personal, Apple TV–inspired home screen for **Samsung (Tizen)** and **LG (webOS)** TVs.
+All your streaming, cloud gaming and music services in one place, driven entirely with the
+remote. Built and tested on a Samsung QE55Q70BATXXC (2022).
 
 ![Home](docs/captures/accueil.png)
 
-> **Installed and running on the TV** (version 2.0.0). The screenshots below come from the
-> desktop simulation, with fake apps. The interface itself is in French.
+> **Installed and running on a Samsung QE55Q70BATXXC** (version 2.0.0). Screenshots come from
+> the desktop simulation, with fake apps. The interface itself is in French.
+
+## Supported TVs
+
+| TV | Status | App detection | Install |
+|---|---|---|---|
+| Samsung 2022 (Tizen 6.5) | ✅ tested on the TV | by name, complete | `./scripts/install.sh` |
+| Samsung 2017–2021, 2023+ (Tizen 3+) | intended, untested | by name, complete | `./scripts/install.sh` |
+| LG (webOS 3+) | intended, tested in simulation | by name if the TV allows it, otherwise 6 major apps checked at launch | `./scripts/install-lg.sh` |
+| Android TV, Google TV, Fire TV, Roku, Apple TV | not supported | — | — |
+
+The platform is detected automatically: one codebase, one `app/` folder.
 
 ## What it does
 
@@ -53,7 +64,7 @@ place, driven entirely with the remote.
 
 ## Privacy and security
 
-- **Public** Tizen privileges only; no account, no telemetry, no ads.
+- Samsung: **public** Tizen privileges only. LG: public Application Manager service. Everywhere: no account, no telemetry, no ads.
 - Network limited to **Open-Meteo** (weather) and **TMDB** (titles and images), enforced in
   `config.xml` and the CSP.
 - Preferences are stored on the TV only.
@@ -64,11 +75,13 @@ place, driven entirely with the remote.
 
 ```
 app/            code packaged into the .wgt
-  config.xml    Tizen manifest
+  config.xml    Samsung (Tizen) manifest
+  appinfo.json  LG (webOS) manifest
   index.html, css/hub.css
   js/hub.js     UI, focus, launching, settings
   js/tmdb.js    TMDB (6 h cache, 8 s timeout, error handling)
-  js/platform.js, catalog.js, nav.js, store.js, widgets.js
+  js/platform.js  Samsung / LG / browser, detected automatically
+  js/catalog.js, nav.js, store.js, widgets.js
 dev/            Tizen simulation and end-to-end test (never packaged)
 maquettes/      design mockups (v6 = basis of the current UI)
 scripts/        build, local server, screenshots
@@ -85,7 +98,8 @@ Requirements: Node.js and Python 3 (no npm dependencies).
 ```
 
 Then open `http://localhost:8765/dev/?fresh=1` (arrows, Enter, Esc = Back).
-Scenarios: `?scenario=full`, `?scenario=listfail`, `?scenario=notizen`.
+Samsung scenarios: `?scenario=full`, `?scenario=listfail`, `?scenario=notizen`.
+LG scenarios: `?platform=webos` (app list denied), `?platform=webos&lglist=1` (list allowed).
 Automated test: `?e2e=1`, results in `window.__e2e`.
 
 ```bash
@@ -93,6 +107,8 @@ node tests/run-tests.js
 ```
 
 ## Install on the TV
+
+### Samsung
 
 One command (tests, signed package, install, launch). The IP is remembered, so next
 time `./scripts/install.sh` is enough.
@@ -102,6 +118,14 @@ time `./scripts/install.sh` is enough.
 ```
 
 First-time setup (developer mode, Samsung certificate): [INSTALLATION.md](docs/INSTALLATION.md).
+
+### LG
+
+```bash
+./scripts/install-lg.sh
+```
+
+First-time setup (Developer Mode app, webOS CLI): [INSTALLATION-LG.md](docs/INSTALLATION-LG.md) (French).
 Uninstall: [DESINSTALLATION.md](docs/DESINSTALLATION.md).
 
 ---

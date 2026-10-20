@@ -13,7 +13,7 @@
 (function () {
   'use strict';
   var q = (location.search.match(/scenario=(\w+)/) || [])[1] || 'default';
-  if (q === 'notizen') return;
+  if (q === 'notizen' || /[?&]platform=webos/.test(location.search)) return; // LG : voir webos-mock.js
 
   // Icône FACTICE (lettre sur pastille) pour tester l'affichage des icônes ; ce ne sont pas les vraies.
   function fakeIcon(letter, color) {
