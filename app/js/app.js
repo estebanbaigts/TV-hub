@@ -409,6 +409,13 @@
       frag.appendChild(section);
     });
     el.sections.appendChild(frag);
+    // Positions verticales lues une seule fois par rendu : les relire à chaque appui forçait
+    // un recalcul complet de la mise en page (coûteux sur le processeur de la TV).
+    state.rowTops = Array.prototype.map.call(el.sections.children, function (n) { return n.offsetTop; });
+    state.cardBoxes = Array.prototype.map.call(el.sections.children, function (n) {
+      var t = n.querySelector('.track'), k = t.children, x0 = k.length ? k[0].offsetLeft : 0;
+      return Array.prototype.map.call(k, function (c) { return [c.offsetLeft - x0, c.offsetWidth]; });
+    });
     state.scrollX = {};
     lastFocused = null;
     var keep = heroTid && findTile(heroTid);
@@ -504,9 +511,10 @@
     if (node) {
       var x = state.scrollX[p.r] || 0;
       var n = state.rows[p.r].items.length;
-      var left = node.offsetLeft - track.children[0].offsetLeft;
-      var right = left + node.offsetWidth;
-      var last = track.children[n - 1].offsetLeft - track.children[0].offsetLeft + track.children[n - 1].offsetWidth;
+      var boxes = state.cardBoxes[p.r]; // positions mémorisées au rendu (aucune mesure ici)
+      var left = boxes[p.c][0];
+      var right = left + boxes[p.c][1];
+      var last = boxes[n - 1][0] + boxes[n - 1][1];
       var peekL = p.c > 0 ? PEEK : 0, peekR = p.c < n - 1 ? PEEK : 0;
       if (left - peekL - x < 0) x = left - peekL;
       else if (right + peekR - x > VIEW_W) x = right + peekR - VIEW_W;
@@ -517,7 +525,7 @@
 
     // Défilement vertical : 1re rangée → la carte « à la une » reste visible ;
     // ensuite, la rangée active passe en haut de la zone (les rangées au-dessus sortent entièrement).
-    var y = p.r === 0 ? 0 : Math.max(0, section.offsetTop - 18);
+    var y = p.r === 0 ? 0 : Math.max(0, state.rowTops[p.r] - 18);
     el.rows.style.transform = 'translate3d(0,' + (-y) + 'px,0)';
     if (instant) {
       el.rows.classList.add('no-anim');
