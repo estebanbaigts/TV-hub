@@ -94,12 +94,11 @@ node tests/run-tests.js
 
 ## Install on the TV
 
-```bash
-TIZEN_PROFILE=TVHub ./scripts/build.sh
-```
+One command (tests, signed package, install, launch). The IP is remembered, so next
+time `./scripts/install.sh` is enough.
 
 ```bash
-~/tizen-studio/tools/ide/bin/tizen install -n dist/TVHub-2.0.0.wgt -t QE55Q70BATXXC
+./scripts/install.sh 192.168.1.123
 ```
 
 First-time setup (developer mode, Samsung certificate): [INSTALLATION.md](docs/INSTALLATION.md).

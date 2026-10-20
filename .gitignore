@@ -4,3 +4,4 @@ dist/
 # Clé TMDB personnelle : jamais publiée
 app/js/config.local.js
 maquettes/v6/key.js
+.tv-ip
