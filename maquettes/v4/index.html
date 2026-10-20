@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette — style Apple TV</title>
+<link rel="stylesheet" href="../v2/v2.css">
+<style>
+  /* Variante via ?v=1 (classique), 2 (widgets), 3 (ambiance) */
+  body { background: #0b0b0f url(../v3/img/bg-graphite.jpg) center / cover no-repeat; }
+
+  /* Top Shelf : la grande bannière de l'app focalisée */
+  .shelf { position: absolute; left: 0; right: 0; top: 0; height: 620px; overflow: hidden; }
+  .shelf .art-host { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+  .shelf::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 260px;
+    background: linear-gradient(180deg, rgba(11,11,15,0) 0%, rgba(11,11,15,.85) 100%); }
+  .shelf-text { position: absolute; left: 110px; top: 400px; z-index: 2; }
+  .shelf-text .k { font-size: 20px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: rgba(255,255,255,.8); }
+  .shelf-text .t { font-size: 76px; font-weight: 800; letter-spacing: -.03em; margin-top: 8px; }
+  .shelf-text .s { font-size: 24px; color: rgba(255,255,255,.85); margin-top: 8px; }
+  .top-right { position: absolute; top: 44px; right: 110px; z-index: 3; text-align: right; }
+  .top-right .t { font-size: 32px; font-weight: 600; }
+
+  /* Grille d'icônes façon Apple TV : tuiles pleines, nom seulement au focus */
+  .apps { position: absolute; left: 110px; right: 110px; top: 660px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 46px 40px; }
+  .apps .tile { width: 100%; }
+  .apps .card { width: 100%; height: 160px; border-radius: 22px; box-shadow: 0 0 0 1px rgba(255,255,255,.06); }
+  .apps .card .name { display: none; }
+  .apps .lbl { margin-top: 14px; text-align: center; font-size: 22px; font-weight: 600; opacity: 0; transition: opacity 160ms ease; }
+  .apps .tile.is-focused .lbl { opacity: 1; }
+  .apps .tile.is-focused > .card { transform: scale(1.12) translateY(-6px); box-shadow: 0 0 0 1px rgba(255,255,255,.25), 0 26px 50px rgba(0,0,0,.55); }
+
+  /* Widgets discrets dans la bannière (v=2) */
+  .mini { position: absolute; right: 110px; top: 430px; z-index: 3; display: none; gap: 18px; }
+  .mini .widget { padding: 20px 26px; border-radius: 24px; background: rgba(20,20,28,.55); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
+  .mini .wx { display: flex; align-items: center; gap: 14px; }
+  .mini .wx .big { font-size: 56px; line-height: 1; }
+  .mini .wx .temp { font-size: 54px; }
+  .mini .news { width: 520px; }
+  .mini .news .news-item { padding: 8px 0; }
+  .mini .news .news-item .t { font-size: 19px; }
+  .mini .news .news-item .when { display: none; }
+  .v2 .mini { display: flex; }
+
+  /* Ambiance (v=3) : visuel plein écran, dock en bas */
+  .v3 .shelf { height: 1080px; }
+  .v3 .shelf::after { height: 520px; background: linear-gradient(180deg, rgba(11,11,15,0) 0%, rgba(11,11,15,.9) 100%); }
+  .v3 .shelf-text { top: auto; bottom: 330px; }
+  .v3 .apps { top: auto; bottom: 70px; grid-template-columns: repeat(7, 1fr); gap: 34px; }
+  .v3 .apps .tile:nth-child(n+8) { display: none; }
+  .v3 .apps .card { height: 140px; }
+  .v3 .mini { display: flex; top: 44px; right: 260px; }
+  .v3 .mini .news { display: none; }
+</style>
+</head>
+<body>
+  <div class="shelf"><div class="art-host" data-bind="art"></div></div>
+  <div class="shelf-text">
+    <div class="k" data-bind="kind"></div>
+    <div class="t" data-bind="title"></div>
+    <div class="s" data-bind="sub"></div>
+  </div>
+  <div class="top-right"><div class="t" data-clock="time"></div><div class="clock-d" data-clock="date"></div></div>
+
+  <div class="mini">
+    <section class="widget wx"><div class="big" data-w="icon"></div><div><div class="temp" data-w="temp"></div><div class="cond" data-w="cond"></div></div></section>
+    <section class="widget news"><div class="w-label"><span data-icon-news></span>À la une</div><div data-w="news" data-max="2"></div></section>
+  </div>
+
+  <div class="apps">
+    <div class="tile" data-f data-start data-app="luna" data-card="noname"></div>
+    <div class="tile" data-f data-app="xbox" data-card="noname"></div>
+    <div class="tile" data-f data-app="netflix" data-card="noname"></div>
+    <div class="tile" data-f data-app="youtube" data-card="noname"></div>
+    <div class="tile" data-f data-app="prime" data-card="noname"></div>
+    <div class="tile" data-f data-app="canal" data-card="noname"></div>
+    <div class="tile" data-f data-app="crunchyroll" data-card="noname"></div>
+    <div class="tile" data-f data-app="gaminghub" data-card="noname"></div>
+    <div class="tile" data-f data-app="geforce" data-card="noname"></div>
+    <div class="tile" data-f data-app="apps" data-card="noname"></div>
+    <div class="tile" data-f data-app="home" data-card="noname"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="label-maquette" id="lbl"></div>
+  <script>
+    var v = (location.search.match(/v=(\d)/) || [0, '1'])[1];
+    document.body.classList.add('v' + v);
+    document.getElementById('lbl').textContent = 'Maquette style Apple TV · ' + ({1: 'Classique', 2: 'Avec widgets', 3: 'Ambiance'})[v] + ' — visuels provisoires, données d’exemple';
+  </script>
+  <script src="../v2/widgets.js"></script>
+  <script src="../art.js"></script>
+  <script>
+    Array.prototype.forEach.call(document.querySelectorAll('.apps .tile'), function (el) {
+      var l = document.createElement('div'); l.className = 'lbl'; l.textContent = el.dataset.title; el.appendChild(l);
+    });
+  </script>
+  <script src="../maquette.js"></script>
+</body>
+</html>
