@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette C — Ambiance</title>
+<link rel="stylesheet" href="v2.css">
+<style>
+  .hero { position: absolute; left: 160px; right: 160px; top: 120px; display: flex; align-items: center; justify-content: space-between; }
+  .clock .hello { font-size: 34px; }
+  .clock .t { font-size: 230px; font-weight: 200; letter-spacing: -.05em; line-height: 1; }
+  .clock .d { font-size: 32px; color: rgba(255,255,255,.75); margin-top: 8px; }
+  .wx { display: flex; align-items: center; gap: 30px; padding: 34px 44px; border-radius: 40px; }
+  .wx .big { font-size: 150px; line-height: 1; }
+  .wx .temp { font-size: 120px; }
+  .wx .forecast { margin-top: 18px; width: 560px; }
+  .ticker { position: absolute; left: 160px; right: 160px; top: 560px; display: flex; align-items: center; gap: 20px; padding: 20px 26px; border-radius: 24px; }
+  .ticker .w-label { flex: 0 0 auto; }
+  .ticker .line { font-size: 26px; font-weight: 650; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ticker .nav { flex: 0 0 auto; font-size: 20px; color: rgba(255,255,255,.7); }
+  .dock { position: absolute; left: 50%; top: 700px; transform: translateX(-50%); display: flex; gap: 34px; padding: 30px 40px 24px; border-radius: 48px; }
+  .ic { width: 150px; text-align: center; }
+  .ic .card { width: 150px; height: 150px; border-radius: 40px; }
+  .ic .card .name { display: none; }
+  .ic .nm { margin-top: 16px; font-size: 21px; font-weight: 600; color: rgba(255,255,255,.65); white-space: nowrap; }
+  .ic.is-focused .nm { color: #fff; }
+  .sep { width: 2px; height: 110px; margin-top: 20px; background: rgba(255,255,255,.18); }
+</style>
+</head>
+<body class="ocean">
+  <div class="hero">
+    <div class="clock">
+      <div class="hello" data-clock="hello"></div>
+      <div class="t" data-clock="time"></div>
+      <div class="d" data-clock="date"></div>
+    </div>
+    <section class="widget wx glass" data-f data-keep data-title="Météo détaillée">
+      <span class="sample">Exemple</span>
+      <div class="big" data-w="icon"></div>
+      <div>
+        <div class="temp" data-w="temp"></div>
+        <div class="cond"><span data-w="cond"></span> · <span data-w="city"></span></div>
+        <div class="forecast" data-w="forecast"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="ticker panel" data-f data-keep data-title="Actualités">
+    <div class="w-label"><span data-icon-news></span>Actu</div>
+    <div class="line" data-w="headline"></div>
+    <div class="nav">1 / 4 · → suivant</div>
+  </section>
+
+  <div class="dock glass">
+    <div class="ic" data-f data-start data-app="luna" data-card="noname"></div>
+    <div class="ic" data-f data-app="xbox" data-card="noname"></div>
+    <div class="ic" data-f data-app="gaminghub" data-card="noname"></div>
+    <div class="sep"></div>
+    <div class="ic" data-f data-app="netflix" data-card="noname"></div>
+    <div class="ic" data-f data-app="youtube" data-card="noname"></div>
+    <div class="ic" data-f data-app="canal" data-card="noname"></div>
+    <div class="ic" data-f data-app="apps" data-card="noname"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="label-maquette">Maquette C · Ambiance — données d'exemple</div>
+  <script src="widgets.js"></script>
+  <script src="../art.js"></script>
+  <script>
+    Array.prototype.forEach.call(document.querySelectorAll('.ic'), function (el) {
+      var nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = el.dataset.title; el.appendChild(nm);
+      var s = el.querySelector('svg'); if (s) s.setAttribute('preserveAspectRatio', 'xMaxYMid slice');
+    });
+  </script>
+  <script src="../maquette.js"></script>
+</body>
+</html>

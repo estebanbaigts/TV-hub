@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette D — Bento</title>
+<link rel="stylesheet" href="v2.css">
+<style>
+  .brand { position: absolute; left: 150px; top: 50px; font-size: 30px; font-weight: 800; letter-spacing: -.01em; }
+  .brand span { color: rgba(255,255,255,.6); font-weight: 600; }
+  .grid {
+    position: absolute; left: 150px; right: 110px; top: 120px; bottom: 56px;
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); gap: 24px;
+  }
+  .grid > * { min-width: 0; min-height: 0; }
+  .g-hero { grid-column: 1 / 3; grid-row: 1 / 3; }
+  .g-wx { grid-column: 3; grid-row: 1; }
+  .g-clock { grid-column: 4; grid-row: 1; }
+  .g-news { grid-column: 3 / 5; grid-row: 2; }
+  .grid .tile > .card { width: 100%; height: 100%; }
+  .grid .tile { width: 100%; height: 100%; }
+  .g-hero .card { border-radius: 34px; }
+  .g-hero.is-focused > .card { transform: scale(1.02); }
+  .g-news .news-item:nth-child(n+3) { display: none; }
+  .hero-info { position: absolute; left: 26px; right: 26px; bottom: 26px; padding: 26px 30px; border-radius: 26px; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.24); z-index: 2; }
+  .hero-info h2 { font-size: 58px; font-weight: 800; letter-spacing: -.03em; }
+  .hero-info p { font-size: 22px; margin-top: 8px; color: rgba(255,255,255,.9); }
+  .hero-info .cta { display: inline-block; margin-top: 18px; padding: 13px 28px; border-radius: 16px; background: #fff; color: #1b1446; font-size: 22px; font-weight: 800; }
+  .g-hero .card .name { display: none; }
+  .g-wx { background: linear-gradient(160deg, #2a8dff 0%, #6a4dff 100%); }
+  .g-wx .row1 { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+  .g-wx .big { font-size: 80px; line-height: 1; }
+  .g-wx .temp { font-size: 80px; }
+  .g-clock { display: flex; flex-direction: column; justify-content: center; }
+  .g-clock .t { font-size: 104px; font-weight: 200; letter-spacing: -.04em; line-height: 1; margin-top: 6px; }
+  .g-news .list { margin-top: 6px; }
+  .g-news .news-item { padding: 12px 0; }
+  .g-news .news-item .t { font-size: 22px; }
+</style>
+</head>
+<body>
+  <nav class="rail panel">
+    <div class="ri is-current" data-f data-keep><span data-icon="home"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="pad"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="tv"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="grid"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="gear"></span></div>
+  </nav>
+
+  <div class="brand">Accueil+ <span>· <span data-clock="date"></span></span></div>
+
+  <div class="grid">
+    <div class="tile g-hero" data-f data-start data-app="luna" data-card="noname"></div>
+    <section class="widget g-wx" data-f data-keep data-title="Météo détaillée">
+      <span class="sample">Exemple</span>
+      <div class="w-label"><span data-icon="cloud"></span>Météo</div>
+      <div class="row1"><div class="big" data-w="icon"></div><div class="temp" data-w="temp"></div></div>
+      <div class="cond"><span data-w="cond"></span> · <span data-w="range"></span></div>
+    </section>
+    <section class="widget g-clock glass" data-f data-keep data-title="Horloge">
+      <div class="hello" data-clock="hello"></div>
+      <div class="t" data-clock="time"></div>
+      <div class="clock-d">Aucun rappel aujourd'hui</div>
+    </section>
+    <section class="widget g-news panel">
+      <span class="sample">Exemple</span>
+      <div class="w-label"><span data-icon-news></span>À la une</div>
+      <div class="list" data-w="news" data-max="3"></div>
+    </section>
+    <div class="tile" data-f data-app="netflix" data-card></div>
+    <div class="tile" data-f data-app="youtube" data-card></div>
+    <div class="tile" data-f data-app="xbox" data-card></div>
+    <div class="tile" data-f data-app="apps" data-card></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="label-maquette">Maquette D · Bento — données d'exemple</div>
+  <script src="widgets.js"></script>
+  <script src="../art.js"></script>
+  <script>
+    // Panneau d'infos sur la grande tuile (au-dessus de l'illustration).
+    var hero = document.querySelector('.g-hero .card');
+    var info = document.createElement('div');
+    info.className = 'hero-info';
+    info.innerHTML = '<h2>Amazon Luna</h2><p>Reprenez votre partie en un clic.</p><span class="cta">▶ Jouer</span>';
+    hero.appendChild(info);
+  </script>
+  <script src="../maquette.js"></script>
+</body>
+</html>

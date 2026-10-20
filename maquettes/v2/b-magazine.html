@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette B — Magazine</title>
+<link rel="stylesheet" href="v2.css">
+<style>
+  .top { position: absolute; left: 150px; right: 110px; top: 50px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .top h1 { font-size: 30px; font-weight: 700; color: rgba(255,255,255,.85); }
+  .hero { position: absolute; left: 150px; right: 110px; top: 130px; height: 430px; display: flex; gap: 26px; }
+  .une {
+    flex: 1; border-radius: 34px; padding: 44px 50px; position: relative; overflow: hidden;
+    background: linear-gradient(120deg, #ff4fa3 0%, #8d4cff 55%, #2bd1d9 120%);
+  }
+  .une .w-label { color: rgba(255,255,255,.9); }
+  .une h2 { margin-top: 26px; font-size: 64px; font-weight: 800; letter-spacing: -.03em; line-height: 1.04; max-width: 900px; }
+  .une .meta { margin-top: 22px; font-size: 22px; color: rgba(255,255,255,.85); }
+  .une .more { position: absolute; left: 50px; bottom: 40px; display: flex; gap: 14px; }
+  .chip { padding: 12px 22px; border-radius: 14px; font-size: 21px; font-weight: 700; background: rgba(255,255,255,.22); }
+  .chip.white { background: #fff; color: #1b1446; }
+  .deco { position: absolute; right: -80px; top: -80px; width: 520px; height: 520px; border-radius: 50%; border: 60px solid rgba(255,255,255,.12); }
+  .weather { width: 470px; background: linear-gradient(160deg, #2a8dff 0%, #5a4dff 100%); }
+  .weather .now { display: flex; align-items: center; gap: 18px; margin: 20px 0 6px; }
+  .weather .now .big { font-size: 96px; line-height: 1; }
+  .weather .forecast { margin-top: 26px; }
+  .rows { position: absolute; left: 150px; right: 110px; top: 610px; }
+  .sec { font-size: 26px; font-weight: 700; margin-bottom: 18px; color: rgba(255,255,255,.85); }
+  .row { display: flex; gap: 24px; margin-bottom: 34px; }
+  .md .card { width: 270px; height: 152px; }
+</style>
+</head>
+<body class="sunset">
+  <nav class="rail panel">
+    <div class="ri is-current" data-f data-keep><span data-icon="home"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="pad"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="tv"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="grid"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="gear"></span></div>
+  </nav>
+
+  <div class="top">
+    <h1><span data-clock="hello"></span>, voici votre journée</h1>
+    <div style="text-align:right"><div class="clock-t" data-clock="time"></div><div class="clock-d" data-clock="date"></div></div>
+  </div>
+
+  <div class="hero">
+    <section class="widget une" data-f data-start data-keep data-title="Article à la une">
+      <div class="deco"></div>
+      <span class="sample">Exemple</span>
+      <div class="w-label"><span data-icon-news></span>À la une · Sport</div>
+      <h2 data-w="headline"></h2>
+      <div class="meta">il y a 20 min · 3 min de lecture</div>
+      <div class="more"><span class="chip white">OK · Lire</span><span class="chip">→ Autres titres</span></div>
+    </section>
+    <section class="widget weather" data-f data-keep data-title="Météo détaillée">
+      <span class="sample">Exemple</span>
+      <div class="w-label"><span data-icon="cloud"></span>Météo</div>
+      <div class="now"><div class="big" data-w="icon"></div><div><div class="temp" data-w="temp"></div><div class="cond" data-w="cond"></div></div></div>
+      <div class="city"><span data-w="city"></span></div>
+      <div class="forecast" data-w="forecast"></div>
+    </section>
+  </div>
+
+  <div class="rows">
+    <div class="sec">Jouer</div>
+    <div class="row md">
+      <div class="tile" data-f data-app="luna" data-card></div>
+      <div class="tile" data-f data-app="xbox" data-card></div>
+      <div class="tile" data-f data-app="gaminghub" data-card></div>
+      <div class="tile" data-f data-app="geforce" data-card></div>
+      <div class="tile" data-f data-app="netflix" data-card></div>
+    </div>
+    <div class="sec">Regarder</div>
+    <div class="row md">
+      <div class="tile" data-f data-app="youtube" data-card></div>
+      <div class="tile" data-f data-app="prime" data-card></div>
+      <div class="tile" data-f data-app="canal" data-card></div>
+      <div class="tile" data-f data-app="crunchyroll" data-card></div>
+      <div class="tile" data-f data-app="apps" data-card></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="label-maquette">Maquette B · Magazine — données d'exemple</div>
+  <script src="widgets.js"></script>
+  <script src="../art.js"></script>
+  <script src="../maquette.js"></script>
+</body>
+</html>

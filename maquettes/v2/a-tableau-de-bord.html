@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette A — Tableau de bord</title>
+<link rel="stylesheet" href="v2.css">
+<style>
+  .side { position: absolute; left: 150px; top: 56px; bottom: 56px; width: 560px; display: flex; flex-direction: column; gap: 26px; }
+  .weather { background: linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.08)); box-shadow: inset 0 0 0 1px var(--line); }
+  .weather .now { display: flex; align-items: center; gap: 22px; margin: 18px 0 8px; }
+  .weather .now .big { font-size: 110px; line-height: 1; }
+  .weather .forecast { margin-top: 22px; }
+  .news { flex: 1; }
+  .news .list { margin-top: 10px; }
+  .main { position: absolute; left: 760px; right: 110px; top: 56px; }
+  .head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 34px; }
+  .head h1 { font-size: 56px; font-weight: 800; letter-spacing: -.03em; }
+  .head h1 span { color: rgba(255,255,255,.55); font-weight: 600; }
+  .sec { font-size: 26px; font-weight: 700; margin: 30px 0 18px; color: rgba(255,255,255,.85); }
+  .row { display: flex; gap: 24px; }
+  .big .card { width: 320px; height: 300px; border-radius: 28px; }
+  .md .card { width: 236px; height: 133px; }
+</style>
+</head>
+<body>
+  <nav class="rail panel">
+    <div class="ri is-current" data-f data-keep><span data-icon="home"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="pad"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="tv"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="grid"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="gear"></span></div>
+  </nav>
+
+  <aside class="side">
+    <section class="widget weather" data-f data-keep data-title="Météo détaillée">
+      <span class="sample">Exemple</span>
+      <div class="w-label"><span data-icon="cloud"></span>Météo</div>
+      <div class="now"><div class="big" data-w="icon"></div><div><div class="temp" data-w="temp"></div><div class="cond" data-w="cond"></div></div></div>
+      <div class="city"><span data-w="city"></span> · <span data-w="range"></span></div>
+      <div class="forecast" data-w="forecast"></div>
+    </section>
+    <section class="widget news panel">
+      <span class="sample">Exemple</span>
+      <div class="w-label"><span data-icon-news></span>À la une</div>
+      <div class="list" data-w="news" data-max="3"></div>
+    </section>
+  </aside>
+
+  <main class="main">
+    <div class="head">
+      <h1><span data-clock="hello"></span> <span>· que voulez-vous faire ?</span></h1>
+      <div style="text-align:right"><div class="clock-t" data-clock="time"></div><div class="clock-d" data-clock="date"></div></div>
+    </div>
+    <div class="sec" style="margin-top:0">Jouer</div>
+    <div class="row big">
+      <div class="tile" data-f data-start data-app="luna" data-card></div>
+      <div class="tile" data-f data-app="xbox" data-card></div>
+      <div class="tile" data-f data-app="geforce" data-card></div>
+    </div>
+    <div class="sec">Regarder</div>
+    <div class="row md">
+      <div class="tile" data-f data-app="netflix" data-card></div>
+      <div class="tile" data-f data-app="youtube" data-card></div>
+      <div class="tile" data-f data-app="prime" data-card></div>
+      <div class="tile" data-f data-app="canal" data-card></div>
+    </div>
+    <div class="row md" style="margin-top:24px">
+      <div class="tile" data-f data-app="crunchyroll" data-card></div>
+      <div class="tile" data-f data-app="apps" data-card></div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <div class="label-maquette">Maquette A · Tableau de bord — données d'exemple</div>
+  <script src="widgets.js"></script>
+  <script src="../art.js"></script>
+  <script src="../maquette.js"></script>
+</body>
+</html>
