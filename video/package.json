@@ -29,7 +29,7 @@
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc",
     "assets": "mkdir -p public && cp ../docs/captures/{accueil,streaming,jeux,non-detectee,toutes,reglages}.png public/ && python3 -I scripts/make_music.py",
-    "render": "npm run assets && remotion render Trailer ../docs/video/accueil-plus.mp4 --codec=h264 --crf=20"
+    "render": "npm run assets && remotion render Trailer ../docs/video/accueil-plus.mp4 --codec=h264 --crf=20 && remotion render TrailerFR ../docs/video/accueil-plus-fr.mp4 --codec=h264 --crf=20"
   },
   "allowScripts": {
     "esbuild": false

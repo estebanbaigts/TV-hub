@@ -7,10 +7,12 @@ import {
   staticFile,
   useCurrentFrame,
 } from "remotion";
+import { useT } from "./i18n";
 import { Backdrop, Caption, clamp, easeOut, FONT, Slam, usePop } from "./ui";
 
 /* 1 — Hook: two words slam in on the beat. */
 export const Hook: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill>
@@ -19,9 +21,9 @@ export const Hook: React.FC = () => {
       />
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
         {frame < 35 ? (
-          <Slam text="Every app." size={190} />
+          <Slam text={t("hook1")} size={190} />
         ) : (
-          <Slam text="One screen." size={190} delay={35} />
+          <Slam text={t("hook2")} size={190} delay={35} />
         )}
       </AbsoluteFill>
     </AbsoluteFill>
@@ -30,6 +32,7 @@ export const Hook: React.FC = () => {
 
 /* 2 — Reveal: the home screen tilts up into place. */
 export const Reveal: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   const p = usePop(0, 18, 90);
   const services = [
@@ -60,7 +63,7 @@ export const Reveal: React.FC = () => {
           opacity: interpolate(frame, [4, 16], [0, 1], clamp),
         }}
       >
-        Your TV, finally premium.
+        {t("reveal")}
       </div>
       <AbsoluteFill
         style={{
@@ -134,6 +137,7 @@ export const Reveal: React.FC = () => {
 
 /* 3 — Spotlight: slow push into the cinematic hero. */
 export const Spotlight: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill style={{ backgroundColor: "#050506", overflow: "hidden" }}>
@@ -151,13 +155,14 @@ export const Spotlight: React.FC = () => {
           ),
         }}
       />
-      <Caption text="A cinematic spotlight." />
+      <Caption text={t("spotlight")} />
     </AbsoluteFill>
   );
 };
 
 /* 4 — Games: the camera dives onto the Resume tile. */
 export const Games: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   // Resume tile centre in the 1920×1080 screenshot → moved to (960, 470) while zooming.
   const s = interpolate(frame, [8, 60], [1, 1.9], {
@@ -180,7 +185,7 @@ export const Games: React.FC = () => {
           scale: String(s),
         }}
       />
-      <Caption text="Resume in one click." delay={34} />
+      <Caption text={t("games")} delay={34} />
     </AbsoluteFill>
   );
 };
@@ -210,22 +215,26 @@ const Cut: React.FC<{ img: string; text: string }> = ({ img, text }) => {
     </AbsoluteFill>
   );
 };
-export const QuickCuts: React.FC = () => (
-  <AbsoluteFill>
-    <Sequence durationInFrames={30} name="Honest">
-      <Cut img="non-detectee.png" text="Never a fake launch." />
-    </Sequence>
-    <Sequence from={30} durationInFrames={30} name="Apps">
-      <Cut img="toutes.png" text="All your apps." />
-    </Sequence>
-    <Sequence from={60} durationInFrames={30} name="Private">
-      <Cut img="reglages.png" text="Zero tracking." />
-    </Sequence>
-  </AbsoluteFill>
-);
+export const QuickCuts: React.FC = () => {
+  const t = useT();
+  return (
+    <AbsoluteFill>
+      <Sequence durationInFrames={30} name="Honest">
+        <Cut img="non-detectee.png" text={t("cut1")} />
+      </Sequence>
+      <Sequence from={30} durationInFrames={30} name="Apps">
+        <Cut img="toutes.png" text={t("cut2")} />
+      </Sequence>
+      <Sequence from={60} durationInFrames={30} name="Private">
+        <Cut img="reglages.png" text={t("cut3")} />
+      </Sequence>
+    </AbsoluteFill>
+  );
+};
 
 /* 6 — Install: the command types itself. */
 export const Install: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   const cmd = "./scripts/install.sh";
   const typed = cmd.slice(
@@ -247,7 +256,7 @@ export const Install: React.FC = () => {
             opacity: interpolate(frame, [0, 8], [0, 1], clamp),
           }}
         >
-          One command.
+          {t("install")}
         </div>
         <div
           style={{
@@ -281,7 +290,7 @@ export const Install: React.FC = () => {
               translate: `0px ${interpolate(ok, [0, 1], [24, 0])}px`,
             }}
           >
-            ✓ Installed on your TV
+            {t("installed")}
           </div>
         </div>
       </AbsoluteFill>
@@ -291,6 +300,7 @@ export const Install: React.FC = () => {
 
 /* 7 — End card. */
 export const End: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill>
@@ -307,7 +317,7 @@ export const End: React.FC = () => {
             opacity: interpolate(frame, [12, 22], [0, 1], clamp),
           }}
         >
-          For Samsung &amp; LG TVs
+          {t("end")}
         </div>
         <div
           style={{

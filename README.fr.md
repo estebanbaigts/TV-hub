@@ -8,7 +8,7 @@ uniquement à la télécommande. Conçu et testé sur une Samsung QE55Q70BATXXC 
 
 ![Accueil](docs/captures/accueil.png)
 
-▶ **[Bande-annonce](docs/video/accueil-plus.mp4)** (20 s, en anglais)
+▶ **[Bande-annonce](docs/video/accueil-plus-fr.mp4)** (20 s) · [version anglaise](docs/video/accueil-plus.mp4)
 
 > **Installé et lancé sur une Samsung QE55Q70BATXXC** (version 2.0.0). Les captures viennent de
 > la simulation sur ordinateur, avec des applications fictives.

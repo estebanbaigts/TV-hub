@@ -1,5 +1,6 @@
 import React from "react";
 import { AbsoluteFill, Html5Audio, Sequence, staticFile } from "remotion";
+import { Lang, LangProvider } from "./i18n";
 import {
   End,
   Games,
@@ -22,25 +23,27 @@ export const SCENES = [
 ];
 export const TOTAL = SCENES.reduce((a, s) => a + s.frames, 0);
 
-export const Trailer: React.FC = () => {
+export const Trailer: React.FC<{ lang: Lang }> = ({ lang }) => {
   let from = 0;
   return (
-    <AbsoluteFill style={{ backgroundColor: "#050506" }}>
-      {SCENES.map(({ name, frames, C }) => {
-        const seq = (
-          <Sequence
-            key={name}
-            name={name}
-            from={from}
-            durationInFrames={frames}
-          >
-            <C />
-          </Sequence>
-        );
-        from += frames;
-        return seq;
-      })}
-      <Html5Audio src={staticFile("music.wav")} />
-    </AbsoluteFill>
+    <LangProvider lang={lang}>
+      <AbsoluteFill style={{ backgroundColor: "#050506" }}>
+        {SCENES.map(({ name, frames, C }) => {
+          const seq = (
+            <Sequence
+              key={name}
+              name={name}
+              from={from}
+              durationInFrames={frames}
+            >
+              <C />
+            </Sequence>
+          );
+          from += frames;
+          return seq;
+        })}
+        <Html5Audio src={staticFile("music.wav")} />
+      </AbsoluteFill>
+    </LangProvider>
   );
 };
