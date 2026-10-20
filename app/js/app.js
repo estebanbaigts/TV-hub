@@ -36,7 +36,7 @@
   ];
 
   // Zone des rangées : de 710 px (après les widgets) à 1810 px (marge droite).
-  var VIEW_W = 1920 - 710 - 110;
+  var VIEW_W = 1920 - 170 - 110; // dock : de 170 px à 1810 px
   var PEEK = 90; // part visible de la carte voisine quand la rangée défile
 
   var state = {
@@ -384,7 +384,9 @@
     var frag = document.createDocumentFragment();
     var heroTid = el.hero && el.hero.tid;
     el.rows.innerHTML = '';
-    el.rows.appendChild(renderHero());
+    var shelf = document.getElementById('shelf');
+    shelf.innerHTML = '';
+    shelf.appendChild(renderHero());
     el.sections = h('div', 'sections');
     el.rows.appendChild(el.sections);
     state.rows.forEach(function (row, r) {
@@ -525,7 +527,7 @@
 
     // Défilement vertical : 1re rangée → la carte « à la une » reste visible ;
     // ensuite, la rangée active passe en haut de la zone (les rangées au-dessus sortent entièrement).
-    var y = p.r === 0 ? 0 : Math.max(0, state.rowTops[p.r] - 18);
+    var y = Math.max(0, state.rowTops[p.r] - 18); // la rangée active occupe le dock
     el.rows.style.transform = 'translate3d(0,' + (-y) + 'px,0)';
     if (instant) {
       el.rows.classList.add('no-anim');

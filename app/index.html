@@ -11,6 +11,9 @@
 <body class="theme-nuit">
   <div class="stage" id="stage">
 
+    <!-- Bannière plein écran : l'app sélectionnée (style Apple TV) -->
+    <div class="shelf" id="shelf"></div>
+
     <nav class="rail" id="rail" aria-label="Sections"></nav>
 
     <!-- Colonne de widgets (affichage seul) -->
@@ -30,13 +33,13 @@
       </section>
       <section class="widget w-news" id="wNews">
         <div class="w-label"><span class="w-ico" id="wNewsLabelIco"></span>À la une<span class="w-place">franceinfo</span></div>
-        <div class="w-list" id="wNewsList"><p class="w-empty">Chargement…</p></div>
+        <div class="w-list" id="wNewsList" data-max="2"><p class="w-empty">Chargement…</p></div>
         <div class="w-updated" id="wNewsUpdated"></div>
       </section>
     </aside>
 
     <header class="head">
-      <h1><span id="clockHello"></span><span class="head-sub"> · que voulez-vous faire ?</span></h1>
+      <h1 hidden><span id="clockHello"></span></h1>
       <div class="clock">
         <div class="mode-badge" id="modeBadge" hidden>Personnalisation</div>
         <div>

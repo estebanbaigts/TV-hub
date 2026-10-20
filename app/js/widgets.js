@@ -155,7 +155,7 @@
   function renderNews(items, ts) {
     el.list.innerHTML = '';
     if (!items.length) { el.list.innerHTML = '<p class="w-empty">Aucun titre pour le moment.</p>'; return; }
-    items.slice(0, 4).forEach(function (n) {
+    items.slice(0, +(el.list.getAttribute('data-max') || 4)).forEach(function (n) {
       var row = root.document.createElement('div');
       row.className = 'w-item';
       var src = root.document.createElement('span');

@@ -97,7 +97,7 @@
     await wait(200);
     check('carte « à la une » : montre l’app focalisée', document.querySelector('.hero-title').textContent === 'Amazon Luna', document.querySelector('.hero-title').textContent);
     check('widget météo affiché (simulation)', document.getElementById('wTemp').textContent === '14°' && document.querySelectorAll('.w-day').length === 4);
-    check('widget actualités affiché (simulation)', document.querySelectorAll('.w-item').length === 4);
+    check('widget actualités affiché (simulation)', document.querySelectorAll('.w-item').length === 2);
 
     // Service absent : explication, aucun lancement.
     var before = window.__launches.length;
@@ -129,7 +129,7 @@
     check('« Toutes les apps » : une seule rangée (carrousel)', document.querySelectorAll('.row-all').length === 1);
     var g4 = 0;
     while (focused() !== lastN.getAttribute('data-tid') && g4++ < 60) press(KEY.R);
-    check('carrousel : la dernière carte est atteinte et entièrement visible', focused() === lastN.getAttribute('data-tid') && sx(lastN).right <= 1100, Math.round(sx(lastN).right));
+    check('carrousel : la dernière carte est atteinte et entièrement visible', focused() === lastN.getAttribute('data-tid') && sx(lastN).right <= 1640, Math.round(sx(lastN).right));
     check('carrousel : la première carte est sortie à gauche', sx(firstN).right < 0, Math.round(sx(firstN).right));
     var g5 = 0;
     while (focused() !== firstN.getAttribute('data-tid') && g5++ < 60) press(KEY.L);
