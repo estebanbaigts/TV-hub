@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets"
         xmlns:tizen="http://tizen.org/ns/widgets"
-        id="http://local/tvhub" version="1.0.0" viewmodes="maximized">
+        id="http://local/tvhub" version="2.0.0" viewmodes="maximized">
     <tizen:application id="tvhubPerso.TVHub" package="tvhubPerso" required_version="2.3"/>
     <name>Accueil+</name>
-    <description>Lanceur personnel minimaliste. Aucune donnée envoyée, aucun compte.</description>
+    <description>Accueil personnel pour TV Samsung. Aucun compte, aucune télémétrie.</description>
     <author>TV Hub (usage personnel)</author>
     <content src="index.html"/>
     <icon src="icon.png"/>
@@ -21,11 +21,12 @@
     <!-- Enregistrer les touches de couleur de la télécommande. -->
     <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
 
-    <!-- Accès réseau limité aux widgets (météo, actualités) : ces seuls sites, rien d'autre. -->
+    <!-- Accès réseau limité à ces seuls sites : météo (Open-Meteo), titres et images (TMDB). -->
     <tizen:privilege name="http://tizen.org/privilege/internet"/>
     <access origin="https://api.open-meteo.com" subdomains="false"/>
     <access origin="https://geocoding-api.open-meteo.com" subdomains="false"/>
-    <access origin="https://www.franceinfo.fr" subdomains="false"/>
+    <access origin="https://api.themoviedb.org" subdomains="false"/>
+    <access origin="https://image.tmdb.org" subdomains="false"/>
     <tizen:setting screen-orientation="landscape" context-menu="disable"
                    background-support="disable" encryption="disable"
                    install-location="auto" hwkey-event="enable"/>

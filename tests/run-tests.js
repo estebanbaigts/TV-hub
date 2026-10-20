@@ -170,9 +170,9 @@ function walk(dir) {
 var files = walk(APP);
 var text = files.filter(function (f) { return /\.(js|css|html|xml)$/.test(f); });
 // Seuls sites autorisés : ceux des widgets (météo, actualités), plus les espaces de noms XML.
-var NET_ORIGINS = ['https://api.open-meteo.com', 'https://geocoding-api.open-meteo.com', 'https://www.franceinfo.fr'];
-test('aucune URL réseau hors des 3 sources des widgets', function () {
-  var allowed = /^https?:\/\/(www\.w3\.org|tizen\.org|local\/tvhub|api\.open-meteo\.com|geocoding-api\.open-meteo\.com|www\.franceinfo\.fr)/;
+var NET_ORIGINS = ['https://api.open-meteo.com', 'https://geocoding-api.open-meteo.com', 'https://api.themoviedb.org', 'https://image.tmdb.org'];
+test('aucune URL réseau hors des sources autorisées', function () {
+  var allowed = /^https?:\/\/(www\.w3\.org|tizen\.org|local\/tvhub|api\.open-meteo\.com|geocoding-api\.open-meteo\.com|www\.franceinfo\.fr|api\.themoviedb\.org|image\.tmdb\.org)/;
   text.forEach(function (f) {
     var urls = fs.readFileSync(f, 'utf8').match(/https?:\/\/[^\s"'<>)]+/g) || [];
     urls.forEach(function (u) { assert.ok(allowed.test(u), path.relative(ROOT, f) + ' -> ' + u); });
@@ -183,7 +183,7 @@ test('aucune simulation incluse dans app/', function () {
     assert.ok(fs.readFileSync(f, 'utf8').indexOf('tizen-mock') === -1, path.relative(ROOT, f));
   });
 });
-test('config.xml : privilèges publics attendus, accès réseau limité aux 3 sources', function () {
+test('config.xml : privilèges publics attendus, accès réseau limité aux sources autorisées', function () {
   var x = fs.readFileSync(path.join(APP, 'config.xml'), 'utf8');
   var privs = (x.match(/privilege name="([^"]+)"/g) || []).map(function (m) { return m.split('"')[1]; }).sort();
   assert.deepStrictEqual(privs, [
@@ -196,7 +196,7 @@ test('config.xml : privilèges publics attendus, accès réseau limité aux 3 so
   assert.deepStrictEqual(origins, NET_ORIGINS.slice().sort());
   assert.ok(!/origin="\*"/.test(x), 'accès réseau ouvert à tous les sites');
   var csp = fs.readFileSync(path.join(APP, 'index.html'), 'utf8').match(/connect-src ([^;]+);/)[1].trim().split(/\s+/).sort();
-  assert.deepStrictEqual(csp, NET_ORIGINS.slice().sort());
+  assert.deepStrictEqual(csp, NET_ORIGINS.filter(function (o) { return o !== 'https://image.tmdb.org'; }).sort());
   assert.ok(/<tizen:profile name="tv-samsung"\/>/.test(x));
 });
 test('compatibilité moteur Chromium M85 (Tizen 6.5)', function () {

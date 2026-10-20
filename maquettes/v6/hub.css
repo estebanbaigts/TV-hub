@@ -1,6 +1,6 @@
 /*
  * TV-hub V6 — styles. Cible : Tizen 6.5 (Chromium M85), 1920×1080, vue à ~3 m.
- * Règles : pas de backdrop-filter, pas de filter, animations uniquement sur
+ * Règles : aucun flou ni filtre graphique, animations uniquement sur
  * transform/opacity, textes ≥ 22 px.
  */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -108,3 +108,6 @@ body { color: #f5f5f7; -webkit-font-smoothing: antialiased; cursor: none;
 #stage.boot *, #stage.boot { transition: none !important; }
 .sheet .field { display: block; width: 100%; margin-top: 28px; height: 76px; padding: 0 26px; border: 0; border-radius: 18px; outline: none;
   background: #f5f5f7; color: #111; font: 600 30px/76px "SamsungOne", -apple-system, "Helvetica Neue", Arial, sans-serif; cursor: none; }
+.sheet .field[hidden] { display: none; }
+.credit { display: none; }
+#stage.credits .credit { display: block; }

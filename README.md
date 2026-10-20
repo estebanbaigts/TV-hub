@@ -1,101 +1,111 @@
-# TV Hub
+# Accueil+
 
 **English** · [Français](README.fr.md)
 
-A minimal personal launcher — shown on the TV as **Accueil+** — for a **Samsung QE55Q70BATXXC (2022 QLED)** TV, firmware
-**T-PTMDEUC-1720.7**, running **Tizen 6.5** (Chromium M85 web engine).
+A personal, Apple TV–inspired home screen for a **Samsung QE55Q70BATXXC** (2022 QLED,
+Tizen 6.5, firmware 1720.7). All your streaming, cloud gaming and music services in one
+place, driven entirely with the remote.
 
-**"Aurora"** design (premium, colourful, three themes: Aurora, Sunset, Ocean): a floating glass icon rail on the left, a large **games carousel** whose selected
-card expands (Luna, Xbox, Gaming Hub), and carousels for **Streaming**, **My apps**
-(favorites), **All apps** and **TV Hub settings**. Every known service gets an original
-abstract illustration (no official logos). Fully remote-controlled, and kept light for
-the TV's ARM processor (no full-screen animated layers).
+![Home](docs/captures/accueil.png)
 
-![Preview](docs/captures/home.png)
+> **Installed and running on the TV** (version 2.0.0). The screenshots below come from the
+> desktop simulation, with fake apps. The interface itself is in French.
 
-> **Status: prototype tested in simulation, not yet installed on the TV.**
-> Nothing has been connected to or installed on the TV yet. See [Installation](docs/INSTALLATION.md).
+## What it does
 
-## Principles
+- **Cinematic spotlight**: the selected tile shows a title that is popular on that service
+  in France (backdrop, logo, year, synopsis), via TMDB.
+- **Real launching**: apps are detected on the TV by name. A tile only opens an app that
+  actually exists; otherwise it says "Non détectée" (not detected) and explains how to reach
+  it. Launches are never faked.
+- **Games**: a **▶ Reprendre** (resume) tile for the last game service you opened, and a
+  **Jeu du moment** (current game) you type yourself, shown as a reminder.
+- **All apps** installed on the TV, alphabetically.
+- **Settings**: start on Home or on the last section, service status, image refresh.
+- Discreet time, date and weather (Open-Meteo); "weather unavailable" rather than made-up values.
 
-- Standard Tizen web app (`.wgt`) using **public** privileges only.
-- Network access **limited to the widgets**: Open-Meteo (weather, city derived from the TV's
-  time zone) and the franceinfo RSS feed. No other site (CSP + `access`), no account, no
-  telemetry. These services see the home IP address on refresh (every 30 / 60 min).
-- **No hard-coded app IDs.** Installed apps are discovered at startup
-  (`tizen.application.getAppsInfo`) and matched by **name**. A tile can only be launched
-  if the app was actually found on the TV.
-- A missing service is shown as "Non détectée" (not detected) and explains how to reach
-  it; it never fakes a launch.
-- Does not replace the Samsung home screen, does not auto-start, changes nothing else on
-  the TV. The remote's **Home** button always returns to the Samsung home screen.
+| Streaming | Games |
+|---|---|
+| ![Streaming](docs/captures/streaming.png) | ![Games](docs/captures/jeux.png) |
+| **All apps** | **Service not detected** |
+| ![All apps](docs/captures/toutes.png) | ![Not detected](docs/captures/non-detectee.png) |
 
-> The on-screen interface and the documents in `docs/` are in French.
+![Settings](docs/captures/reglages.png)
 
-## Remote control
+## Remote
 
-| Key | Browsing | Customizing |
-|---|---|---|
-| Arrows | Move focus; ← at a row's left edge opens the **rail** | Same / move the grabbed tile |
-| OK | Open the app | Options: Move, Add/Remove favorite |
-| Red (A) | Enter customizing mode | Done |
-| Back | Return to the Samsung home screen | Done / close |
+| Key | Action |
+|---|---|
+| ← → | Neighbouring tile (stops at the edges); in the tab bar: neighbouring tab |
+| ↑ ↓ | Neighbouring row, column remembered; ↑ from the first row → tabs; ↓ on a tab → opens it |
+| OK | The only key that acts: opens the app, section or option (one launch at a time) |
+| Back | Closes the dialog → previous section (position restored) → tabs → Samsung home |
 
-- **Carousels**: moving right slides the first cards out to the left to reveal the next
-  ones; the neighbouring card always peeks in.
-- **Rail**: ↑/↓ previews a section (the page scrolls), → or OK enters it. The last icon
-  (house) returns to the Samsung home screen.
-- **TV Hub settings**: Customize, **Theme**, **Service status** (what was detected, with the real
-  app IDs), Samsung home, Reset (clears TV Hub's own preferences only).
+## Honest limitations
+
+- **No auto-start**: no public API lets an app launch at power-on or replace the Samsung
+  home. Fastest path: pin Accueil+ first on the Samsung home, then Home → OK. See
+  [DEMARRAGE.md](docs/DEMARRAGE.md) (French).
+- **No deep links to a film or a game**: OK opens the service's app, you pick the content
+  there (stated on screen).
+- **Availability** comes from TMDB / JustWatch and may change.
+- No official logos are bundled: tiles show the service name in its colours.
+
+## Privacy and security
+
+- **Public** Tizen privileges only; no account, no telemetry, no ads.
+- Network limited to **Open-Meteo** (weather) and **TMDB** (titles and images), enforced in
+  `config.xml` and the CSP.
+- Preferences are stored on the TV only.
+- The TMDB key lives in `app/js/config.local.js`, **ignored by git**:
+  `window.TMDB_KEY = 'your_key';`. Without it, the app works without images.
 
 ## Layout
 
 ```
-app/                 code packaged into the .wgt (and nothing else)
-  config.xml         Tizen manifest (tv-samsung profile, 3 public privileges)
-  index.html, css/, js/, img/, icon.png
-dev/                 Tizen simulation + end-to-end test (never packaged, generated page)
-maquettes/           the 4 UI mockups (design reference)
-scripts/build.sh     tests + .wgt package (signed when Tizen Studio + a profile are available)
-scripts/serve.sh     local preview at http://localhost:8765/dev/
-scripts/capture.sh   1920×1080 screenshot of a state (key sequence ?keys=L,D,OK…)
-tests/run-tests.js   unit tests and static checks (Node, no dependencies)
-docs/                compatibility, installation, tests, startup, uninstall (in French)
+app/            code packaged into the .wgt
+  config.xml    Tizen manifest
+  index.html, css/hub.css
+  js/hub.js     UI, focus, launching, settings
+  js/tmdb.js    TMDB (6 h cache, 8 s timeout, error handling)
+  js/platform.js, catalog.js, nav.js, store.js, widgets.js
+dev/            Tizen simulation and end-to-end test (never packaged)
+maquettes/      design mockups (v6 = basis of the current UI)
+scripts/        build, local server, screenshots
+tests/          dependency-free Node tests
+docs/           installation, startup, compatibility, uninstall (French)
 ```
 
-## Quick start (on the Mac)
+## Develop on the Mac
 
 Requirements: Node.js and Python 3 (no npm dependencies).
-
-```bash
-./scripts/build.sh
-```
 
 ```bash
 ./scripts/serve.sh
 ```
 
-Then open `http://localhost:8765/dev/?fresh=1` and use the arrows, Enter, and Esc
-(= Back). The 1920×1080 screen scales down to fit smaller windows.
+Then open `http://localhost:8765/dev/?fresh=1` (arrows, Enter, Esc = Back).
 Scenarios: `?scenario=full`, `?scenario=listfail`, `?scenario=notizen`.
-Automated test: `?e2e=1`, then read `window.__e2e` in the console.
-**The `dev/` page uses fictional apps**; it does not reflect your TV.
+Automated test: `?e2e=1`, results in `window.__e2e`.
 
-## Installing on the TV
+```bash
+node tests/run-tests.js
+```
 
-Summary (full steps in [docs/INSTALLATION.md](docs/INSTALLATION.md), in French):
+## Install on the TV
 
-1. Install **Tizen Studio 6.1** (`web-ide_Tizen_Studio_6.1_macos-64.dmg` from
-   `download.tizen.org`), then in the Package Manager install **TV Extensions** and
-   **Samsung Certificate Extension** (≥ 2.0.73).
-2. Turn on the TV's **Developer mode** (Apps → `12345`).
-3. Create a **Samsung certificate** (Certificate Manager, Samsung account).
-4. `TIZEN_PROFILE=<profile> ./scripts/build.sh`, then install the signed `.wgt`.
+```bash
+TIZEN_PROFILE=TVHub ./scripts/build.sh
+```
 
-## Documents (French)
+```bash
+~/tizen-studio/tools/ide/bin/tizen install -n dist/TVHub-2.0.0.wgt -t QE55Q70BATXXC
+```
 
-- [Compatibility and research](docs/COMPATIBILITE.md) — Luna / Xbox / other apps matrix, sources
-- [Installation](docs/INSTALLATION.md) — Tizen Studio, Samsung certificate, deployment
-- [Test report](docs/RAPPORT-DE-TESTS.md) — verified vs. not verified
-- [Auto-start](docs/DEMARRAGE.md) — what is and isn't possible
-- [Uninstall](docs/DESINSTALLATION.md)
+First-time setup (developer mode, Samsung certificate): [INSTALLATION.md](docs/INSTALLATION.md).
+Uninstall: [DESINSTALLATION.md](docs/DESINSTALLATION.md).
+
+---
+
+Data and images: [TMDB](https://www.themoviedb.org). Availability: JustWatch.
+This product uses the TMDB API but is not endorsed or certified by TMDB.

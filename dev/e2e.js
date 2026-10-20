@@ -1,198 +1,55 @@
 /*
  * Test de bout en bout dans le navigateur, contre la SIMULATION (dev/tizen-mock.js).
- * Actif uniquement avec ?e2e=1 (?fresh=1 : démarre seulement avec des préférences vides). Résultats : window.__e2e = { done, passed, failed, log }.
+ * ?fresh=1 : démarre avec des préférences vides. ?e2e=1 : lance le test.
+ * Résultats : window.__e2e = { done, passed, failed, log }.
+ * (La relecture de touches ?keys=… est gérée par l'application elle-même.)
  */
 (function () {
   'use strict';
-  if (/[?&](e2e|fresh)=1/.test(location.search)) {
-    try { localStorage.clear(); } catch (e) {}
-    // En quittant, l'app enregistre ses préférences ; une page de test ne doit rien laisser derrière
-    // elle (sinon la page suivante démarre avec un focus mémorisé). Écouteur posé après celui de l'app.
-    window.addEventListener('load', function () {
-      document.addEventListener('visibilitychange', function () {
-        if (document.hidden) { try { localStorage.clear(); } catch (e) {} }
-      });
-    });
-  }
-
-  // ?keys=L,L,D,OK,RED… : rejoue une séquence de touches après la détection (captures d'écran).
-  var seq = (location.search.match(/[?&]keys=([A-Z,]+)/) || [])[1];
-  if (seq) {
-    var CODES = { L: 37, U: 38, R: 39, D: 40, OK: 13, BACK: 10009, RED: 403 };
-    window.addEventListener('load', function () {
-      var list = seq.split(','), i = 0;
-      (function next() {
-        if (!(window.__tvhub && window.__tvhub.discovery.reason !== 'pending')) { setTimeout(next, 50); return; }
-        if (i >= list.length) return;
-        var ev = new KeyboardEvent('keydown', { bubbles: true });
-        Object.defineProperty(ev, 'keyCode', { get: function () { return CODES[list[i]]; } });
-        document.dispatchEvent(ev);
-        i++;
-        setTimeout(next, 250);
-      })();
-    });
-  }
-
+  if (/[?&](e2e|fresh)=1/.test(location.search)) { try { localStorage.clear(); } catch (e) { /* ignore */ } }
   if (!/[?&]e2e=1/.test(location.search)) return;
 
-  var R = window.__e2e = { done: false, passed: 0, failed: 0, log: [], perf: null, trace: [] };
-  function snap(label) { try { R.trace.push(label + ': ' + localStorage.getItem('tvhub.prefs.v1')); } catch (e) {} }
-  snap('début e2e.js');
-  window.addEventListener('storage', function () { snap('événement storage'); });
-  window.addEventListener('load', function () { snap('load (prefs app = ' + JSON.stringify(window.__tvhub && window.__tvhub.prefs.lastFocus) + ')'); });
-  var KEY = { L: 37, U: 38, R: 39, D: 40, OK: 13, BACK: 10009, RED: 403 };
-  function press(code) { document.dispatchEvent(new KeyboardEvent('keydown', { keyCode: code, bubbles: true })); }
-  // keyCode n'est pas initialisable via le constructeur dans tous les moteurs : on le force.
-  var orig = window.KeyboardEvent;
-  window.KeyboardEvent = function (type, init) {
-    var ev = new orig(type, init);
-    Object.defineProperty(ev, 'keyCode', { get: function () { return init.keyCode; } });
-    return ev;
-  };
+  var R = window.__e2e = { done: false, passed: 0, failed: 0, log: [] };
+  var K = { L: 37, U: 38, R: 39, D: 40, OK: 13, B: 10009 };
+  function press(s) { s.split(',').forEach(function (k) { window.__v6.key(K[k]); }); }
+  function focused() { var t = document.querySelector('.tile.focus'); return t ? t.textContent : ''; }
+  function check(name, ok) { R[ok ? 'passed' : 'failed']++; R.log.push((ok ? 'ok   ' : 'FAIL ') + name); }
   function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-  function focused() { var n = document.querySelector('.tile.is-focused'); return n && n.getAttribute('data-tid'); }
-  function check(name, cond, extra) {
-    if (cond) R.passed++; else R.failed++;
-    R.log.push((cond ? 'ok   ' : 'FAIL ') + name + (cond || !extra ? '' : '  [' + extra + ']'));
-  }
-  function rowTids(id) {
-    return Array.prototype.map.call(document.querySelectorAll('.row-' + id + ' .tile'), function (n) { return n.getAttribute('data-tid'); });
-  }
 
-  async function run() {
-    // Attend la fin de la détection des applications (et non un délai fixe).
-    for (var t = 0; t < 60 && !(window.__tvhub && window.__tvhub.discovery.reason !== 'pending'); t++) await wait(50);
-    await wait(100);
-    R.trace.push('départ : découverte=' + JSON.stringify(window.__tvhub.discovery.reason) + ' apps=' + window.__tvhub.discovery.apps.length +
-      ' pos=' + JSON.stringify(window.__tvhub.nav.get()) + ' focus=' + focused() + ' zone=' + window.__tvhub.zone + ' visible=' + !document.hidden);
-    check('focus initial sur la première app disponible (Xbox)', focused() === 'svc:xbox', focused());
-    check('Luna absente affichée « Non détectée »', !!document.querySelector('[data-tid="svc:luna"].is-missing'));
-    var all = rowTids('all');
-    check('app de service masquée exclue', all.indexOf('app:MockServic.Service') === -1);
-    check('app système interne filtrée', all.indexOf('app:com.samsung.tv.settings') === -1);
-    check('utilitaire eManual filtré', all.indexOf('app:MockManual.emanual') === -1);
-    check('app préinstallée visible gardée (Internet)', all.indexOf('app:org.tizen.browser') !== -1);
-    check('doublon CANAL+ fusionné', all.filter(function (t) { return /Canal/.test(t); }).length === 1, all.filter(function (t) { return /Canal/.test(t); }).join(','));
-    check('icône réelle affichée si disponible (YouTube)', !!document.querySelector('[data-tid="svc:youtube"] img.icon'));
-    check('TV Hub ne se liste pas lui-même', all.indexOf('app:tvhubPerso.TVHub') === -1);
-    check('Disney+ (optionnelle, absente) non affichée', !document.querySelector('[data-tid="svc:disney"]'));
-
-    press(KEY.R); check('droite', focused() === 'svc:gaminghub', focused());
-    press(KEY.R); check('droite en bout de rangée : reste', focused() === 'svc:gaminghub', focused());
-    press(KEY.L); press(KEY.L); check('gauche', focused() === 'svc:luna', focused());
-    press(KEY.D); check('bas -> Streaming', focused() === 'svc:netflix', focused());
-    press(KEY.U); check('haut -> retour même colonne', focused() === 'svc:luna', focused());
-    press(KEY.U); check('haut en première rangée : reste', focused() === 'svc:luna', focused());
-
-    // Rail : ← au bord gauche, aperçu de section, retour dans les rangées.
-    function railIdx() { return Array.prototype.indexOf.call(document.querySelectorAll('.ri'), document.querySelector('.ri.is-focused')); }
-    press(KEY.L);
-    check('← au bord gauche : rail (Jeux)', railIdx() === 0 && !focused(), railIdx() + '/' + focused());
-    press(KEY.D);
-    check('rail ↓ : aperçu de Streaming', railIdx() === 1 && !!document.querySelector('.row-streaming.is-active'));
-    press(KEY.R);
-    check('rail → : entre dans Streaming', focused() === 'svc:netflix', focused());
-    press(KEY.L); press(KEY.U); press(KEY.R);
-    check('rail ↑ puis → : retour sur la carte de jeu mémorisée', focused() === 'svc:luna', focused());
-    await wait(200);
-    check('carte « à la une » : montre l’app focalisée', document.querySelector('.hero-title').textContent === 'Amazon Luna', document.querySelector('.hero-title').textContent);
-    check('widget météo affiché (simulation)', document.getElementById('wTemp').textContent === '14°' && document.querySelectorAll('.w-day').length === 4);
-    check('widget actualités affiché (simulation)', document.querySelectorAll('.w-item').length === 2);
-
-    // Service absent : explication, aucun lancement.
-    var before = window.__launches.length;
-    press(KEY.OK); await wait(50);
-    check('Luna absente : feuille explicative ouverte', !document.getElementById('sheetBackdrop').hidden);
-    check('Luna absente : aucun lancement tenté', window.__launches.length === before);
-    press(KEY.BACK);
-    check('Retour ferme la feuille', document.getElementById('sheetBackdrop').hidden);
-
-    // Lancement réussi + restauration du focus.
-    press(KEY.D); press(KEY.OK); await wait(300);
-    check('Netflix : lancement demandé avec l’id découvert', window.__launches[window.__launches.length - 1] === 'org.tizen.netflix-app');
-    document.dispatchEvent(new Event('visibilitychange')); await wait(300);
-    check('retour d’app : focus restauré sur Netflix', focused() === 'svc:netflix', focused());
-
-    // Échec de lancement.
-    press(KEY.D); // Favoris vide -> sautée : « Toutes les applications »
-    check('rangée vide sautée', rowTids('all').indexOf(focused()) !== -1, focused());
-
-    // Carrousel horizontal : la dernière carte devient visible, la première sort à gauche, et retour.
-    function sx(n) { // position finale dans le repère 1920×1080 : mise en page + décalage demandé
-      var tr = n.parentNode;           // (indépendant de l'avancement de l'animation)
-      var x = -parseFloat((tr.style.transform.match(/translate3d\((-?[\d.]+)px/) || [0, '0'])[1]);
-      var left = n.offsetLeft - tr.children[0].offsetLeft - x; // 0 = début de la zone des rangées
-      return { left: left, right: left + n.offsetWidth };
-    }
-    var allNodes = document.querySelectorAll('.row-all .tile');
-    var firstN = allNodes[0], lastN = allNodes[allNodes.length - 1];
-    check('« Toutes les apps » : une seule rangée (carrousel)', document.querySelectorAll('.row-all').length === 1);
-    var g4 = 0;
-    while (focused() !== lastN.getAttribute('data-tid') && g4++ < 60) press(KEY.R);
-    check('carrousel : la dernière carte est atteinte et entièrement visible', focused() === lastN.getAttribute('data-tid') && sx(lastN).right <= 1640, Math.round(sx(lastN).right));
-    check('carrousel : la première carte est sortie à gauche', sx(firstN).right < 0, Math.round(sx(firstN).right));
-    var g5 = 0;
-    while (focused() !== firstN.getAttribute('data-tid') && g5++ < 60) press(KEY.L);
-    check('carrousel : retour au début, première carte à sa place', Math.abs(sx(firstN).left) < 4, Math.round(sx(firstN).left));
-
-    press(KEY.OK); await wait(300);
-    var t = document.getElementById('toast');
-    check('échec de lancement signalé', /toast-error/.test(t.className) && /NotFoundError/.test(t.textContent), t.textContent);
-
-    // Personnalisation : ajout aux favoris.
-    press(KEY.RED);
-    check('Rouge : mode personnalisation', document.body.classList.contains('mode-edit'));
-    press(KEY.OK); await wait(20);
-    var btns = Array.prototype.map.call(document.querySelectorAll('.sheet-btn'), function (b) { return b.textContent; });
-    check('options : Ajouter aux favoris', btns[0] === 'Ajouter aux favoris', btns.join('|'));
-    press(KEY.OK); await wait(20);
-    check('favori ajouté', rowTids('favorites').indexOf('app:MockBroken.Broken') !== -1);
-
-    // Déplacement dans Streaming et persistance.
-    var g3 = 0;
-    while (rowTids('streaming').indexOf(focused()) === -1 && g3++ < 6) press(KEY.U);
-    var guard2 = 0;
-    while (focused() !== 'svc:netflix' && guard2++ < 10) press(KEY.L);
-    press(KEY.OK); await wait(20);
-    press(KEY.OK); // « Déplacer »
-    check('mode déplacement', document.body.classList.contains('mode-move'));
-    press(KEY.R); press(KEY.OK);
-    var order = rowTids('streaming');
-    check('Netflix déplacée en 2e position', order[1] === 'svc:netflix', order.join(','));
-    var saved = JSON.parse(localStorage.getItem('tvhub.prefs.v1'));
-    check('ordre enregistré localement', saved.order.streaming[1] === 'svc:netflix');
-    press(KEY.BACK);
-    check('Retour quitte la personnalisation', !document.body.classList.contains('mode-edit'));
-
-    function xboxFallback() { return !!document.querySelector('[data-tid="svc:xbox"] .art svg') && !document.querySelector('[data-tid="svc:xbox"] img.icon'); }
-    for (var g7 = 0; g7 < 40 && !xboxFallback(); g7++) await wait(50); // l'erreur de chargement est asynchrone
-    check('icône illisible → illustration de secours (Xbox)', xboxFallback());
-
-    // Thème : Réglages → « Thème » change le fond et est mémorisé.
-    var g6 = 0;
-    while (rowTids('system').indexOf(focused()) === -1 && g6++ < 10) press(KEY.D);
-    while (focused() !== 'act:theme' && g6++ < 20) press(KEY.R);
-    var before = document.body.className;
-    press(KEY.OK);
-    var savedTheme = JSON.parse(localStorage.getItem('tvhub.prefs.v1') || '{}').theme;
-    check('thème : changement appliqué et mémorisé', document.body.className !== before && document.body.classList.contains('theme-' + savedTheme), document.body.className);
-
-    // Performance : 3000 appuis.
-    var t0 = performance.now();
-    var dirs = [KEY.R, KEY.R, KEY.D, KEY.L, KEY.U, KEY.R, KEY.D, KEY.D, KEY.U, KEY.L];
-    for (var i = 0; i < 3000; i++) press(dirs[i % dirs.length]);
-    var dt = performance.now() - t0;
-    R.perf = { keys: 3000, totalMs: Math.round(dt), msPerKey: +(dt / 3000).toFixed(3),
-      heapMB: performance.memory ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(1) : null,
-      domNodes: document.getElementsByTagName('*').length };
-    check('3000 appuis traités < 2 ms/appui en moyenne', dt / 3000 < 2, R.perf.msPerKey);
-    check('un seul élément focalisé (rangées + rail)', document.querySelectorAll('.tile.is-focused, .ri.is-focused').length === 1);
-
-    // Retour à l'accueil Samsung.
-    press(KEY.BACK);
-    check('Retour (accueil) appelle exit()', window.__exited === true);
-
-    R.done = true;
-  }
-  window.addEventListener('load', function () { run().catch(function (e) { R.log.push('ERREUR ' + e.message); R.failed++; R.done = true; }); });
+  window.addEventListener('load', function () {
+    var S;
+    wait(500).then(function () {
+      S = window.__v6.S;
+      check('démarrage sur l’accueil, focus sur la 1re tuile', S.section === 'home' && S.area === 'rows' && /Netflix/.test(focused()));
+      check('services détectés par nom', S.detect === 'ok' && !!S.svc.netflix.app);
+      press('L');
+      check('pas de bouclage à gauche', /Netflix/.test(focused()));
+      press('OK,OK');
+      check('un seul lancement malgré deux OK', window.__launches.length === 1 && window.__launches[0] === 'org.tizen.netflix-app');
+      return wait(400);
+    }).then(function () {
+      press('R,R,R,OK');
+      var appletv = S.svc.appletv.app;
+      check('service absent : explication, aucun lancement', appletv || (S.modal === true && window.__launches.length === 1));
+      press('B');
+      check('Retour ferme la fenêtre', !S.modal);
+      press('D,L,L,OK');
+      return wait(400);
+    }).then(function () {
+      check('lancement Xbox', window.__launches.indexOf('MockXboxGP.Xbox') >= 0);
+      check('tuile Reprendre ajoutée, focus conservé sur Xbox', S.rows[1].items[0].type === 'resume' && /^Xbox$/.test(focused()));
+      press('U');
+      var before = focused();
+      press('U,R,R,D');
+      check('onglet Jeux ouvert par ↓', S.section === 'games');
+      press('B');
+      check('Retour → accueil, dernière tuile visitée restaurée', S.section === 'home' && S.area === 'rows' && focused() === before);
+      press('B,B');
+      check('Retour depuis les onglets de l’accueil → quitte vers Samsung', window.__exited === true);
+      check('aucun défilement de la page', document.scrollingElement.scrollTop === 0);
+      R.done = true;
+      try { localStorage.clear(); } catch (e) { /* ignore */ }
+      console.log('[e2e] ' + R.passed + ' réussis, ' + R.failed + ' échoués\n' + R.log.join('\n'));
+    }).catch(function (e) { check('exception : ' + e.message, false); R.done = true; });
+  });
 })();

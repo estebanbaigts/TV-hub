@@ -1,81 +1,50 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
+<meta charset="utf-8">
   <!-- GÉNÉRÉ par scripts/make_dev_page.py : ne pas modifier à la main. -->
   <base href="../app/">
-  <meta name="viewport" content="width=1920, height=1080, user-scalable=no">
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' file: data:; connect-src https://api.open-meteo.com https://geocoding-api.open-meteo.com https://www.franceinfo.fr; font-src 'self'; media-src 'none'; object-src 'none'">
-  <title>Accueil+ (simulation)</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta name="viewport" content="width=1920, height=1080, user-scalable=no">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' file: data: https://image.tmdb.org; connect-src https://api.themoviedb.org https://api.open-meteo.com https://geocoding-api.open-meteo.com; font-src 'self'; media-src 'none'; object-src 'none'">
+<title>Accueil+ (simulation)</title>
+<link rel="stylesheet" href="css/hub.css">
+<!-- Clé TMDB personnelle (fichier ignoré par git). Absente : TMDB désactivé proprement. -->
+<script src="js/config.local.js"></script>
+<script src="../dev/tizen-mock.js"></script>
+  <script src="../dev/e2e.js"></script>
+  <script src="js/platform.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/widgets.js"></script>
+<script src="js/tmdb.js"></script>
 </head>
-<body class="theme-nuit">
-  <div class="stage" id="stage">
+<body>
+<div id="stage">
+  <div class="bd" id="bdA"></div><div class="bd" id="bdB"></div>
+  <div class="shade"></div>
 
-    <!-- Bannière plein écran : l'app sélectionnée (style Apple TV) -->
-    <div class="shelf" id="shelf"></div>
-
-    <nav class="rail" id="rail" aria-label="Sections"></nav>
-
-    <!-- Colonne de widgets (affichage seul) -->
-    <aside class="widgets" aria-label="Widgets">
-      <section class="widget w-weather" id="wWeather">
-        <div class="w-label"><span class="w-ico" id="wWeatherLabelIco"></span>Météo<span class="w-place" id="wPlace"></span></div>
-        <div class="w-now">
-          <div class="w-big" id="wIcon"></div>
-          <div>
-            <div class="w-temp" id="wTemp">--°</div>
-            <div class="w-cond" id="wCond">Chargement…</div>
-          </div>
-        </div>
-        <div class="w-range" id="wRange"></div>
-        <div class="w-forecast" id="wForecast"></div>
-        <div class="w-updated" id="wWeatherUpdated"></div>
-      </section>
-      <section class="widget w-news" id="wNews">
-        <div class="w-label"><span class="w-ico" id="wNewsLabelIco"></span>À la une<span class="w-place">franceinfo</span></div>
-        <div class="w-list" id="wNewsList" data-max="2"><p class="w-empty">Chargement…</p></div>
-        <div class="w-updated" id="wNewsUpdated"></div>
-      </section>
-    </aside>
-
-    <header class="head">
-      <h1 hidden><span id="clockHello"></span></h1>
-      <div class="clock">
-        <div class="mode-badge" id="modeBadge" hidden>Personnalisation</div>
-        <div>
-          <div class="time" id="clockTime">--:--</div>
-          <div class="date" id="clockDate"></div>
-        </div>
-      </div>
-    </header>
-
-    <main class="viewport" id="viewport">
-      <div class="rows" id="rows"></div>
-    </main>
-
-    <footer class="hints" id="hints"></footer>
-
-    <div class="sheet-backdrop" id="sheetBackdrop" hidden>
-      <div class="sheet" id="sheet" role="dialog" aria-modal="true">
-        <div class="sheet-title" id="sheetTitle"></div>
-        <div class="sheet-body" id="sheetBody"></div>
-        <div class="sheet-actions" id="sheetActions"></div>
-      </div>
-    </div>
-
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="top">
+    <div class="tabs" id="tabs"></div>
+    <div class="status"><span id="wx">Météo…</span><span id="date"></span><span class="clock" id="clock"></span></div>
   </div>
 
-  <script src="../dev/tizen-mock.js"></script>
-  <script src="../dev/e2e.js"></script>
-  <script src="js/catalog.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/platform.js"></script>
-  <script src="js/nav.js"></script>
-  <script src="js/art.js"></script>
-  <script src="js/widgets.js"></script>
-  <script src="js/app.js"></script>
+  <div class="hero" id="hero">
+    <div class="kicker" id="kicker"></div>
+    <div class="htitle" id="htitle"></div>
+    <div class="meta" id="meta"></div>
+    <div class="overview" id="overview"></div>
+    <div class="action" id="action"><span class="ok" id="actOk">OK</span><span id="actText"></span></div>
+    <div class="note" id="note"></div>
+  </div>
+
+  <div class="rowsview"><div class="rows" id="rows"></div></div>
+
+  <div class="credit">Données et images : TMDB · disponibilités : JustWatch — ce produit utilise l’API TMDB sans être approuvé ni certifié par TMDB</div>
+
+  <div class="veil" id="veil"><div class="sheet"><h2 id="shTitle"></h2><div class="body" id="shBody"></div><input class="field" id="shInput" type="text" maxlength="40" autocomplete="off" hidden><div class="btn">OK</div></div></div>
+  <div class="toast" id="toast"></div>
+</div>
+<script src="js/hub.js"></script>
 </body>
 </html>

@@ -162,7 +162,7 @@
       return rows;
     }
     if (id === 'settings') return [
-      { title: 'Au démarrage de TV-hub', kind: 'opt', items: [
+      { title: 'Au démarrage de Accueil+', kind: 'opt', items: [
         { type: 'opt', id: 'start-home', label: 'Ouvrir l’accueil', sub: 'Toujours commencer ici' },
         { type: 'opt', id: 'start-last', label: 'Dernière section', sub: 'Reprendre où vous étiez' }] },
       { title: 'Données', kind: 'opt', items: [
@@ -176,7 +176,7 @@
   // Rendu des rangées (DOM reconstruit seulement au changement de section)
   // ---------------------------------------------------------------------------
 
-  function layoutFor(id) { return (id === 'all' || id === 'settings') ? { y: 540, flat: true } : { y: 744, flat: false }; }
+  function layoutFor(id) { return id === 'settings' ? { y: 600, flat: true } : id === 'all' ? { y: 540, flat: true } : { y: 744, flat: false }; }
 
   function rowHeight(row) { return LABEL_H + SIZES[row.kind].h + LABEL_H + ROW_GAP; }
 
@@ -322,7 +322,8 @@
     if (!opts.noHistory && id !== S.section) S.history.push(S.section);
     S.section = id;
     for (var i = 0; i < SECTIONS.length; i++) if (SECTIONS[i].id === id) S.tab = i;
-    el.stage.className = (layoutFor(id).flat ? 'flat' : '') + (S.booting ? ' boot' : '');
+    // Mention TMDB/JustWatch (obligatoire) affichée seulement dans Réglages.
+    el.stage.className = (layoutFor(id).flat ? 'flat' : '') + (id === 'settings' ? ' credits' : '') + (S.booting ? ' boot' : '');
     S.rows = rowsFor(id);
     renderRows();
     var saved = S.mem[id];
@@ -419,11 +420,11 @@
     var it = current();
     el.action.style.display = '';
     if (S.section === 'all') {
-      return heroSection('Toutes les applications', 'TV-hub', S.detect === 'ok' ? 'Applications installées, par ordre alphabétique. OK pour ouvrir.' : '');
+      return heroSection('Toutes les applications', 'Accueil+', S.detect === 'ok' ? 'Applications installées, par ordre alphabétique. OK pour ouvrir.' : '');
     }
     if (S.section === 'settings') {
-      heroSection('Réglages', 'TV-hub', 'TV-hub ne remplace pas l’accueil Samsung et ne démarre pas seul à l’allumage : aucune API publique ne le permet. La touche Home ouvre toujours l’accueil Samsung.');
-      return setText(el.note, 'Accès le plus rapide : épinglez TV-hub en tête de l’accueil Samsung, puis Home → OK.');
+      heroSection('Réglages', 'Accueil+', 'Accueil+ ne remplace pas l’accueil Samsung et ne démarre pas seul à l’allumage : aucune API publique ne le permet.');
+      return setText(el.note, 'Accès le plus rapide : épinglez Accueil+ en tête de l’accueil Samsung, puis Home → OK.');
     }
     if (!it) {
       var sec = SECTIONS[S.tab];
@@ -434,7 +435,7 @@
     }
     if (it.type === 'more') {
       setBg('more', plainBg('#5a5a64'));
-      setText(el.kicker, 'TV-hub'); setTitle('Toutes les applications', null); setText(el.meta, S.detect === 'ok' ? S.installed.length + ' applications détectées' : '');
+      setText(el.kicker, 'Accueil+'); setTitle('Toutes les applications', null); setText(el.meta, S.detect === 'ok' ? S.installed.length + ' applications détectées' : '');
       setText(el.overview, 'Toutes les applications installées sur le téléviseur, au même endroit.'); setText(el.note, '');
       return setAction({ on: true, text: 'Afficher la liste' });
     }
@@ -465,9 +466,9 @@
     var pin = prefs.pins[s.key];
     setText(el.kicker, 'Reprendre');
     setTitle(pin || s.label, null);
-    setText(el.meta, s.label + ' · ouvert depuis TV-hub ' + W.ago(prefs.lastGame.ts));
-    setText(el.overview, pin ? 'Votre jeu du moment sur ' + s.label + '. TV-hub ouvre l’application ; le jeu se choisit ensuite dans ' + s.label + '.'
-      : 'Le dernier service de jeu que vous avez ouvert. TV-hub ne peut pas lire l’historique de jeu des applications.');
+    setText(el.meta, s.label + ' · ouvert depuis Accueil+ ' + W.ago(prefs.lastGame.ts));
+    setText(el.overview, pin ? 'Votre jeu du moment sur ' + s.label + '. Accueil+ ouvre l’application ; le jeu se choisit ensuite dans ' + s.label + '.'
+      : 'Le dernier service de jeu que vous avez ouvert. Accueil+ ne peut pas lire l’historique de jeu des applications.');
     setText(el.note, '');
     var a = actionFor(s);
     if (a.on && pin) a.text = 'Ouvrir ' + s.label + ', puis lancez « ' + pin + ' »';
@@ -523,7 +524,7 @@
   }
   function closeSheet() {
     S.modal = null; S.pinKey = null; el.veil.className = 'veil';
-    el.shInput.style.display = 'none'; el.shInput.blur();
+    el.shInput.hidden = true; el.shInput.blur();
   }
 
   /* Saisie du jeu du moment : champ texte (clavier virtuel de la TV). Vide = effacer. */
@@ -532,7 +533,7 @@
     sheet('Jeu du moment sur ' + s.label, 'Tapez le nom du jeu, puis OK. Laissez vide pour l’effacer.\nC’est un simple rappel : le jeu se lance ensuite dans ' + s.label + '.');
     S.modal = 'input'; S.pinKey = key;
     el.shInput.value = prefs.pins[key] || '';
-    el.shInput.style.display = '';
+    el.shInput.hidden = false;
     el.shInput.focus();
   }
   function savePin() {
@@ -551,7 +552,7 @@
       toast(label + ' ouverte', false, 1500);
       if (key && GROUPS.games.indexOf(key) >= 0) {
         prefs.lastGame = { key: key, ts: Date.now() }; savePrefs();
-        if (document.hidden) S.dirty = true; else refreshSection(); // sur la TV : au retour dans TV-hub
+        if (document.hidden) S.dirty = true; else refreshSection(); // sur la TV : au retour dans Accueil+
       }
     }, function (err) {
       S.launching = false;
@@ -567,8 +568,8 @@
     if (st === 'desktop') return sheet(s.label, 'Aperçu sur ordinateur : l’API Tizen n’existe pas dans ce navigateur, rien ne peut être lancé.\n' +
       'Sur le téléviseur, ' + s.label + ' s’ouvrira si elle est installée.');
     if (st === 'pending') return toast('Recherche des applications en cours…');
-    if (st === 'unknown') return sheet(s.label, 'Le téléviseur n’a pas fourni la liste des applications (' + S.detectErr + ').\nTV-hub ne lance donc rien à l’aveugle.');
-    sheet(s.label + ' non détectée', s.missing || (s.label + ' n’apparaît pas parmi les applications installées.\nInstallez-la depuis Samsung Apps, puis relancez TV-hub.'));
+    if (st === 'unknown') return sheet(s.label, 'Le téléviseur n’a pas fourni la liste des applications (' + S.detectErr + ').\nAccueil+ ne lance donc rien à l’aveugle.');
+    sheet(s.label + ' non détectée', s.missing || (s.label + ' n’apparaît pas parmi les applications installées.\nInstallez-la depuis Samsung Apps, puis relancez Accueil+.'));
   }
 
   function activate() {
@@ -720,7 +721,8 @@
     var startSec = prefs.start === 'last' && prefs.last ? prefs.last : 'home';
     if (q) startSec = 'home';
     openSection(startSec, { noHistory: true, start: q ? { r: 0, c: Math.min(+q[1], GROUPS.streaming.length - 1) } : null });
-    var unboot = function () { if (!S.booting) return; S.booting = false; el.stage.className = el.stage.className.replace(' boot', ''); };
+    // ?capture=1 : transitions désactivées (captures d'écran stables).
+    var unboot = function () { if (!S.booting || /[?&]capture=1/.test(location.search)) return; S.booting = false; el.stage.className = el.stage.className.replace(' boot', ''); };
     requestAnimationFrame(function () { requestAnimationFrame(unboot); });
     setTimeout(unboot, 300); // si rAF est suspendu (page en arrière-plan)
     detect(refreshSection); // après le focus initial : la détection ne le remplace pas

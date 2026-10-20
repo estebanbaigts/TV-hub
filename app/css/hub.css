@@ -1,0 +1,113 @@
+/*
+ * TV-hub V6 — styles. Cible : Tizen 6.5 (Chromium M85), 1920×1080, vue à ~3 m.
+ * Règles : aucun flou ni filtre graphique, animations uniquement sur
+ * transform/opacity, textes ≥ 22 px.
+ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #050506; }
+body { color: #f5f5f7; -webkit-font-smoothing: antialiased; cursor: none;
+  font-family: "SamsungOne", -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+
+#stage { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; overflow: hidden;
+  background: #050506; transform-origin: 0 0; }
+
+/* ---------- Arrière-plan cinématographique (double tampon) ---------- */
+.bd { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;
+  background: #050506 center top / cover no-repeat; transition: opacity 420ms ease; }
+.bd.on { opacity: 1; }
+.shade { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(5,5,6,.55) 0%, rgba(5,5,6,0) 18%, rgba(5,5,6,0) 34%, rgba(5,5,6,.78) 62%, #050506 88%),
+    linear-gradient(90deg, rgba(5,5,6,.82) 0%, rgba(5,5,6,.35) 42%, rgba(5,5,6,0) 70%); }
+#stage.flat .shade { background: linear-gradient(180deg, rgba(5,5,6,.2) 0%, #050506 70%); }
+
+/* ---------- Barre du haut ---------- */
+.top { position: absolute; top: 48px; left: 120px; right: 120px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+.tabs { display: flex; align-items: center; }
+.tab { height: 56px; line-height: 56px; padding: 0 22px; margin-right: 4px; border-radius: 28px; font-size: 25px; white-space: nowrap; font-weight: 600;
+  color: rgba(245,245,247,.62); transition: transform 160ms ease, background-color 160ms ease, color 160ms ease; }
+.tab.cur { color: #fff; }
+.tab.cur::after { content: ""; display: block; height: 3px; margin: -10px 18px 0; border-radius: 2px; background: rgba(255,255,255,.8); }
+.tab.focus { background: #f5f5f7; color: #111; transform: scale(1.06); }
+.tab.focus::after { display: none; }
+.status { display: flex; align-items: center; font-size: 24px; font-weight: 500; color: rgba(245,245,247,.7); white-space: nowrap; }
+.status span { margin-left: 22px; }
+.status svg { width: 30px; height: 30px; vertical-align: -7px; margin-right: 8px; }
+.status .clock { color: #f5f5f7; font-weight: 600; }
+
+/* ---------- Bloc d'information du contenu mis en avant ---------- */
+.hero { position: absolute; left: 120px; top: 196px; width: 1000px; transition: opacity 200ms ease; }
+.hero.fade { opacity: 0; }
+.kicker { font-size: 22px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(245,245,247,.72); min-height: 28px; }
+.htitle { margin-top: 16px; min-height: 110px; display: flex; align-items: flex-end; }
+.htitle img { display: block; max-width: 600px; max-height: 170px; width: auto; height: auto; }
+.htitle .txt { font-size: 84px; font-weight: 800; letter-spacing: -.025em; line-height: 1.02; max-width: 1000px;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.meta { margin-top: 20px; font-size: 26px; font-weight: 600; color: rgba(245,245,247,.86); min-height: 32px; }
+.overview { margin-top: 14px; max-width: 860px; font-size: 26px; line-height: 1.42; color: rgba(245,245,247,.78);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 37px; }
+.action { margin-top: 26px; display: flex; align-items: center; font-size: 24px; font-weight: 600; color: rgba(245,245,247,.92); }
+.action .ok { display: inline-block; min-width: 54px; height: 38px; line-height: 38px; padding: 0 12px; margin-right: 14px; border-radius: 10px;
+  background: #f5f5f7; color: #111; font-size: 20px; font-weight: 800; text-align: center; }
+.action.off .ok { background: rgba(245,245,247,.25); color: #f5f5f7; }
+.note { margin-top: 14px; font-size: 22px; color: rgba(245,245,247,.5); min-height: 28px; }
+
+/* ---------- Rangées ---------- */
+.rowsview { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; pointer-events: none; }
+.rows { position: absolute; left: 0; top: 0; width: 1920px; transition: transform 260ms cubic-bezier(.2,.8,.2,1); }
+.row { position: absolute; left: 0; width: 1920px; transition: opacity 220ms ease; }
+.row.above { opacity: 0; }
+.row.below { opacity: .5; }
+.rtitle { position: absolute; left: 120px; top: 0; font-size: 26px; font-weight: 700; color: rgba(245,245,247,.88); }
+.track { position: absolute; left: 120px; top: 48px; transition: transform 240ms cubic-bezier(.2,.8,.2,1); white-space: nowrap; }
+.tile { position: absolute; top: 0; border-radius: 18px; overflow: hidden; background: #1c1c1f;
+  box-shadow: 0 8px 20px rgba(0,0,0,.35); transition: transform 180ms cubic-bezier(.2,.8,.2,1), box-shadow 180ms ease; }
+.tile.focus { transform: translateY(-6px) scale(1.08); box-shadow: 0 0 0 4px rgba(255,255,255,.95), 0 24px 46px rgba(0,0,0,.65); z-index: 2; }
+.tile .name { position: absolute; left: 0; right: 0; top: 50%; margin-top: -24px; height: 48px; line-height: 48px; text-align: center;
+  font-size: 34px; font-weight: 800; letter-spacing: -.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 14px; }
+.tile.sm .name { font-size: 27px; }
+.tile img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 260ms ease; }
+.tile img.ok { opacity: 1; }
+.tile.icon img { object-fit: contain; top: 22px; left: 50%; width: 96px; height: 96px; margin-left: -48px; }
+.tile.icon .name { top: auto; bottom: 16px; margin-top: 0; font-size: 24px; font-weight: 600; }
+.tile.icon .ph { position: absolute; top: 22px; left: 50%; width: 96px; height: 96px; margin-left: -48px; border-radius: 24px;
+  background: rgba(255,255,255,.12); font-size: 46px; font-weight: 800; line-height: 96px; text-align: center; }
+.tile.icon.hasimg .ph { display: none; }
+.tile .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 18px 14px; font-size: 22px; font-weight: 700;
+  background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.82)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile .badge { position: absolute; top: 12px; left: 12px; padding: 4px 10px; border-radius: 8px; background: rgba(0,0,0,.72); font-size: 18px; font-weight: 700; }
+.tile.missing { opacity: .5; }
+.tile.missing.focus { opacity: 1; }
+.below-label { position: absolute; left: 0; right: 0; text-align: center; font-size: 22px; color: rgba(245,245,247,.6); white-space: nowrap; }
+.tile.opt { background: #1c1c1f; }
+.tile.opt .name { text-align: left; padding-left: 30px; font-size: 28px; font-weight: 700; margin-top: -32px; }
+.tile.opt .sub { position: absolute; left: 30px; right: 20px; top: 50%; margin-top: 14px; font-size: 22px; color: rgba(245,245,247,.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile.opt.checked::before { content: "✓"; position: absolute; right: 26px; top: 18px; font-size: 30px; font-weight: 800; color: #30d158; }
+.tile.focus.opt { background: #f5f5f7; color: #111; }
+.tile.focus.opt .sub { color: rgba(17,17,17,.68); }
+.tile.focus.opt.checked::before { color: #1a8f3c; }
+
+.empty { position: absolute; left: 120px; width: 1300px; font-size: 26px; line-height: 1.45; color: rgba(245,245,247,.72); }
+
+/* ---------- Feuille d'information et toast ---------- */
+.veil { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.72); opacity: 0; visibility: hidden; transition: opacity 180ms ease, visibility 0s linear 180ms; }
+.veil.on { opacity: 1; visibility: visible; transition: opacity 180ms ease; }
+.sheet { position: absolute; left: 50%; top: 50%; width: 1060px; margin-left: -530px; transform: translateY(-50%); padding: 56px 64px 48px;
+  border-radius: 32px; background: #1c1c1f; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+.sheet h2 { font-size: 40px; font-weight: 800; letter-spacing: -.01em; }
+.sheet .body { margin-top: 22px; font-size: 26px; line-height: 1.5; color: rgba(245,245,247,.82); white-space: pre-line; max-height: 560px; overflow: hidden; }
+.sheet .btn { display: inline-block; margin-top: 36px; height: 64px; line-height: 64px; padding: 0 44px; border-radius: 32px; background: #f5f5f7; color: #111; font-size: 26px; font-weight: 700; }
+.toast { position: absolute; left: 50%; top: 48px; height: 64px; line-height: 64px; padding: 0 34px; border-radius: 32px; background: #f5f5f7; color: #111;
+  font-size: 24px; font-weight: 700; white-space: nowrap; transform: translate(-50%, -140px); transition: transform 220ms cubic-bezier(.2,.8,.2,1); }
+.toast.on { transform: translate(-50%, 0); }
+.toast.err { background: #ff453a; color: #fff; }
+
+.credit { position: absolute; right: 120px; top: 118px; text-align: right; font-size: 18px; color: rgba(245,245,247,.42); }
+
+/* Premier affichage : aucune transition (pas de glissement des rangées au démarrage). */
+#stage.boot *, #stage.boot { transition: none !important; }
+.sheet .field { display: block; width: 100%; margin-top: 28px; height: 76px; padding: 0 26px; border: 0; border-radius: 18px; outline: none;
+  background: #f5f5f7; color: #111; font: 600 30px/76px "SamsungOne", -apple-system, "Helvetica Neue", Arial, sans-serif; cursor: none; }
+.sheet .field[hidden] { display: none; }
+.credit { display: none; }
+#stage.credits .credit { display: block; }

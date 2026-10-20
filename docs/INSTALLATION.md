@@ -60,7 +60,7 @@ TIZEN_PROFILE=TVHub ./scripts/build.sh
 ```
 
 ```bash
-~/tizen-studio/tools/ide/bin/tizen install -n dist/TVHub-1.0.0.wgt -t <NOM_DU_DEVICE>
+~/tizen-studio/tools/ide/bin/tizen install -n dist/TVHub-2.0.0.wgt -t <NOM_DU_DEVICE>
 ```
 
 TV Hub apparaît ensuite dans **Applications**. Pour un accès rapide, voir
