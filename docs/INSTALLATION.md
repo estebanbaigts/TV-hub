@@ -13,12 +13,16 @@
 
 ## A. Sur le Mac
 
-1. **Installer Tizen Studio (avec la CLI)** depuis le site officiel Tizen / Samsung
-   Developers. Sur Mac Apple Silicon, l'installation est signalée comme possible sur
-   les forums, avec des contournements ; l'émulateur, lui, ne fonctionne pas.
+1. **Installer Tizen Studio 6.1** : fichier `web-ide_Tizen_Studio_6.1_macos-64.dmg`
+   (622 Mo), lien donné par la documentation TV de Samsung :
+   `https://download.tizen.org/sdk/Installer/tizen-studio_6.1/`. Ouvrir l'image et lancer
+   `installer.app`. (Aucune somme de contrôle n'est publiée sur ce serveur ; l'intégrité
+   interne de l'image est vérifiable avec `hdiutil verify`.)
 2. Dans **Package Manager** → *Extension SDK*, installer :
-   - **Samsung Certificate Extension** ;
+   - **Samsung Certificate Extension** — version **2.0.73 minimum** (Samsung indique que
+     la création de certificat échoue avec les versions antérieures depuis septembre 2025) ;
    - **TV Extensions** (la version la plus récente proposée).
+   L'émulateur TV n'est pas nécessaire (et ne fonctionne pas sur Mac Apple Silicon).
 3. Vérifier :
    ```bash
    ~/tizen-studio/tools/ide/bin/tizen version
