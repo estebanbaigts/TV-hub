@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette 3 — Calme</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  body { background: #0c0b0a; color: #f4f0ea; }
+
+  /* Ambiance très discrète : l'illustration de l'app, presque effacée */
+  .mood { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.22; }
+  .veil {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;
+    background: radial-gradient(ellipse 70% 60% at 50% 38%, rgba(12,11,10,0.55) 0%, #0c0b0a 85%);
+  }
+
+  .center { position: absolute; top: 150px; left: 0; right: 0; text-align: center; }
+  .hello { font-size: 32px; font-weight: 500; color: rgba(244,240,234,0.6); letter-spacing: 0.01em; }
+  .time { margin-top: 6px; font-size: 250px; font-weight: 200; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .date { margin-top: 16px; font-size: 30px; color: rgba(244,240,234,0.55); }
+
+  /* Étagère */
+  .shelf {
+    position: absolute; left: 50%; top: 640px; transform: translateX(-50%);
+    display: flex; align-items: flex-start; gap: 38px; padding: 34px 46px 26px;
+    border-radius: 48px; background: rgba(255,255,255,0.055);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 0 1px rgba(255,255,255,0.05), 0 30px 80px rgba(0,0,0,0.45);
+  }
+  .ic { width: 150px; text-align: center; }
+  .ic .card { width: 150px; height: 150px; border-radius: 40px; }
+  .ic .card .shade { display: none; }
+  .ic .nm { margin-top: 18px; font-size: 22px; font-weight: 500; color: rgba(244,240,234,0.42); white-space: nowrap; transition: color 160ms ease; }
+  .ic.is-focused .nm { color: #f4f0ea; }
+  .ic.is-focused > .card { transform: scale(1.14) translateY(-12px); }
+  .div { width: 2px; height: 110px; margin-top: 20px; border-radius: 1px; background: rgba(244,240,234,0.12); }
+
+  .links { position: absolute; left: 0; right: 0; top: 950px; display: flex; justify-content: center; gap: 18px; }
+  .link {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 14px 28px; border-radius: 999px; font-size: 22px; font-weight: 500;
+    color: rgba(244,240,234,0.55); transition: background-color 160ms ease, color 160ms ease, transform 160ms var(--ease);
+  }
+  .link svg { font-size: 24px; }
+  .link.is-focused { background: #f4f0ea; color: #0c0b0a; transform: scale(1.05); }
+</style>
+</head>
+<body>
+  <div class="mood" data-bind="art"></div>
+  <div class="veil"></div>
+
+  <div class="center">
+    <div class="hello" data-clock="hello"></div>
+    <div class="time" data-clock="time"></div>
+    <div class="date" data-clock="date"></div>
+  </div>
+
+  <div class="shelf">
+    <div class="ic" data-f data-start data-app="luna"></div>
+    <div class="ic" data-f data-app="xbox"></div>
+    <div class="ic" data-f data-app="gaminghub"></div>
+    <div class="div"></div>
+    <div class="ic" data-f data-app="netflix"></div>
+    <div class="ic" data-f data-app="youtube"></div>
+    <div class="ic" data-f data-app="canal"></div>
+    <div class="ic" data-f data-app="crunchyroll"></div>
+  </div>
+
+  <div class="links">
+    <div class="link" data-f data-keep data-title="Toutes les applications"><span data-icon="grid"></span>Toutes les applications</div>
+    <div class="link" data-f data-keep data-title="Personnaliser"><span data-icon="gear"></span>Personnaliser</div>
+    <div class="link" data-f data-keep data-title="Accueil Samsung"><span data-icon="home"></span>Accueil Samsung</div>
+  </div>
+
+  <div class="grain"></div>
+  <div class="toast" id="toast"></div>
+  <div class="label-maquette">Maquette 3 · Calme</div>
+  <script>
+    Array.prototype.forEach.call(document.querySelectorAll('.ic'), function (el) {
+      var k = el.getAttribute('data-app');
+      el.innerHTML = '<div class="card"><div class="art" data-draw="' + k + '"></div></div><div class="nm"></div>';
+    });
+  </script>
+  <script src="art.js"></script>
+  <script>
+    Array.prototype.forEach.call(document.querySelectorAll('.ic'), function (el) {
+      el.querySelector('.nm').textContent = TVArt.APPS[el.getAttribute('data-app')].title;
+      // Icônes carrées : on recadre sur le sujet de l'illustration (à droite).
+      el.querySelector('svg').setAttribute('preserveAspectRatio', 'xMaxYMid slice');
+    });
+  </script>
+  <script src="maquette.js"></script>
+</body>
+</html>

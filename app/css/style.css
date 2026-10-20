@@ -1,0 +1,269 @@
+/* TV Hub — style « Console ». Couche applicative 1920×1080, Chromium M85 (Tizen 6.5) :
+   pas de flou, pas de `inset`, animations limitées à transform / opacity / width (carrousel). */
+
+:root {
+  --bg: #050608;
+  --text: #eef1f4;
+  --text-2: rgba(238, 241, 244, 0.62);
+  --text-3: rgba(238, 241, 244, 0.4);
+  --surface: #121418;
+  --surface-2: #1b1e23;
+  --accent: #3fb950;
+  --edit: #ffd60a;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --left: 240px;   /* début du contenu : rail (44 + 72 px) + respiration */
+  --right: 110px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--text);
+  font-family: "SamsungOneUI", "SamsungOne", -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased; cursor: none; user-select: none;
+}
+
+/* Scène 1920×1080 : mise à l'échelle par app.js si la fenêtre est plus petite (aperçu).
+   Une scène transformée devient le repère des éléments `position: fixed` qu'elle contient. */
+.stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; transform-origin: 0 0; background: var(--bg); }
+
+/* --- Ambiance : illustration du service focalisé, très atténuée --- */
+.ambient { position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.36; }
+.amb-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0; transition: opacity 700ms ease; }
+.amb-layer.is-in { opacity: 1; }
+.amb-layer svg { width: 100%; height: 100%; display: block; }
+.veil {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(5, 6, 8, 0.15) 0%, rgba(5, 6, 8, 0.75) 55%, var(--bg) 100%),
+    linear-gradient(90deg, var(--bg) 0%, rgba(5, 6, 8, 0) 32%);
+}
+.grain {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 60; pointer-events: none;
+  background: url(../img/grain.png) repeat; opacity: 0.6;
+}
+
+/* --- Rail --- */
+.rail {
+  position: fixed; left: 44px; top: 0; bottom: 0; width: 88px; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+}
+.ri {
+  position: relative; width: 72px; height: 72px; border-radius: 22px;
+  display: flex; align-items: center; justify-content: center; font-size: 34px;
+  color: var(--text-3);
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms var(--ease);
+}
+.ri svg { display: block; }
+.ri.is-current { color: var(--text); }
+.ri.is-current::after {
+  content: ""; position: absolute; left: -14px; top: 26px; width: 5px; height: 20px; border-radius: 3px;
+  background: var(--accent);
+}
+.ri.is-focused { background: #fff; color: #000; transform: scale(1.08); }
+.ri .tip {
+  position: absolute; left: 92px; top: 50%; white-space: nowrap;
+  transform: translate(-8px, -50%); opacity: 0;
+  padding: 10px 18px; border-radius: 12px; background: #fff; color: #000; font-size: 22px; font-weight: 600;
+  transition: opacity 160ms ease, transform 160ms var(--ease);
+}
+.ri.is-focused .tip { opacity: 1; transform: translate(0, -50%); }
+.mode-edit .ri.is-focused { background: var(--edit); }
+
+/* --- Horloge --- */
+.clock {
+  position: fixed; top: 64px; right: var(--right); z-index: 4;
+  display: flex; align-items: center; gap: 28px; text-align: right;
+}
+.time { font-size: 36px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; }
+.date { font-size: 18px; color: var(--text-2); margin-top: 2px; }
+.mode-badge {
+  padding: 10px 20px; border-radius: 12px; background: var(--edit); color: #000;
+  font-size: 20px; font-weight: 700;
+}
+
+/* --- Rangées --- */
+/* La zone visible commence 80 px avant le contenu : place pour l'agrandissement au focus,
+   et la coupure du défilement tombe sous la partie opaque du fondu côté rail. */
+.viewport { position: fixed; top: 0; left: 160px; right: 0; bottom: 0; overflow: hidden; }
+.rows { padding: 64px var(--right) 400px 80px; transition: transform 380ms var(--ease); will-change: transform; }
+.row { padding-bottom: 56px; }
+.row.is-notlast { padding-bottom: 26px; }
+.row-title { font-size: 24px; font-weight: 700; color: var(--text-2); margin-bottom: 22px; transition: color 200ms ease; }
+.row.is-active .row-title { color: var(--text); }
+.row-games .row-title { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); margin: 0 0 40px; line-height: 1; }
+.row-games .row-title span { color: var(--text-3); font-weight: 600; }
+.row-empty { font-size: 22px; color: var(--text-3); padding: 8px 0 4px; }
+.row.is-empty .track { display: none; }
+.track { display: flex; gap: 24px; align-items: flex-start; transition: transform 300ms var(--ease); will-change: transform; }
+.no-anim { transition: none !important; }
+
+/* --- Cartes (Streaming, favoris, toutes les apps) --- */
+.tile { flex: 0 0 auto; position: relative; }
+.card {
+  position: relative; overflow: hidden; background: var(--surface);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  transition: transform 240ms var(--ease), box-shadow 240ms var(--ease);
+}
+.card::after {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.2) 46%, rgba(255, 255, 255, 0) 60%);
+  background-size: 260% 100%; background-position: 120% 0; background-repeat: no-repeat;
+  transition: background-position 900ms var(--ease);
+}
+.art { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+.art svg { width: 100%; height: 100%; display: block; }
+.plain { background: linear-gradient(150deg, var(--accent-t, #2c2c32) 0%, var(--surface) 80%); }
+.card img { position: absolute; top: 14%; left: 0; right: 0; height: 52%; width: 100%; object-fit: contain; }
+.mono {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 30%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; font-weight: 800; letter-spacing: -0.02em; color: rgba(255, 255, 255, 0.85);
+}
+.card.has-icon .mono { display: none; }
+.shade { position: absolute; left: 0; right: 0; bottom: 0; height: 60%; background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.7)); }
+.name {
+  position: absolute; left: 16px; right: 16px; bottom: 12px;
+  font-size: 21px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+/* Grilles : 6 × 236 px et 7 × 200 px tiennent dans 1570 px (gouttière 24 px). */
+.tile-md .card { width: 236px; height: 133px; border-radius: 18px; }
+.tile-sm .card { width: 200px; height: 113px; border-radius: 16px; }
+.tile-sm .name { font-size: 18px; left: 12px; bottom: 9px; }
+.tile-sm .mono { font-size: 30px; }
+
+.tile.is-focused > .card {
+  transform: scale(1.09) translateY(-6px);
+  box-shadow: 0 0 0 4px #fff, 0 30px 60px rgba(0, 0, 0, 0.7);
+}
+.tile.is-focused > .card::after { background-position: -20% 0; }
+
+/* --- Carrousel des jeux : la carte focalisée s'élargit --- */
+.tile-carousel {
+  width: 250px; height: 540px; border-radius: 30px; overflow: hidden; background: var(--surface);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  transition: width 360ms var(--ease), box-shadow 280ms ease;
+}
+.tile-carousel::after {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.tile-carousel .shade { height: 75%; background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.85)); }
+.info { position: absolute; left: 34px; right: 34px; bottom: 32px; }
+.info .n { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.08; transition: font-size 300ms var(--ease); }
+.info .more { max-height: 0; opacity: 0; overflow: hidden; transition: opacity 240ms ease 80ms, max-height 300ms var(--ease); }
+.info .s { margin-top: 14px; font-size: 22px; line-height: 1.4; color: rgba(238, 241, 244, 0.78); width: 580px; }
+.info .cta {
+  margin-top: 22px; display: inline-flex; align-items: center; gap: 12px;
+  padding: 14px 28px; border-radius: 14px; background: #fff; color: #000; font-size: 24px; font-weight: 700;
+}
+.info .cta svg { font-size: 24px; }
+.tile-carousel.is-open { width: 720px; }
+.tile-carousel.is-open .n { font-size: 60px; white-space: nowrap; }
+.tile-carousel.is-open .more { max-height: 320px; opacity: 1; }
+.tile-carousel.is-focused { box-shadow: 0 0 0 4px #fff, 0 40px 80px rgba(0, 0, 0, 0.7); }
+
+.chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.chips span {
+  padding: 7px 14px; border-radius: 10px; font-size: 19px; font-weight: 600;
+  color: rgba(255, 255, 255, 0.88); background: rgba(255, 255, 255, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.chips .warn { background: rgba(0, 0, 0, 0.55); color: var(--text-2); }
+
+/* Services non détectés : visibles mais éteints, jamais présentés comme lançables. */
+.is-missing .art { opacity: 0.4; }
+.is-missing .cta { background: rgba(255, 255, 255, 0.16); color: var(--text); }
+.tag {
+  position: absolute; top: 16px; right: 16px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6); color: var(--text-2); font-size: 16px; font-weight: 700;
+}
+.tile-carousel .tag { top: 24px; right: 24px; font-size: 18px; padding: 7px 14px; }
+.tag-fav { color: var(--edit); }
+
+.is-launching > .card, .tile-carousel.is-launching { animation: pulse 900ms ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.7; } }
+
+/* --- Rangée réglages (pastilles) --- */
+.tile-pill {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 18px 30px; border-radius: 16px; font-size: 23px; font-weight: 600;
+  color: var(--text-2); background: rgba(255, 255, 255, 0.08); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: transform 160ms var(--ease), background-color 160ms ease, color 160ms ease;
+}
+.tile-pill svg { font-size: 26px; }
+.tile-pill.is-focused { background: #fff; color: #000; transform: scale(1.06); }
+
+/* --- Personnalisation --- */
+.mode-edit .tile.is-focused > .card,
+.mode-edit .tile-carousel.is-focused { box-shadow: 0 0 0 4px var(--edit), 0 30px 60px rgba(0, 0, 0, 0.7); }
+.mode-edit .tile-pill.is-focused { background: var(--edit); }
+.tile.is-moving > .card { transform: scale(1.14) translateY(-14px); }
+.tile-carousel.is-moving { box-shadow: 0 0 0 6px var(--edit), 0 40px 80px rgba(0, 0, 0, 0.7); }
+
+/* Fondu côté rail : une carte qui défile s'efface au lieu d'être coupée net. */
+.leftfade {
+  position: fixed; top: 0; bottom: 0; left: 130px; width: 96px; z-index: 2; pointer-events: none;
+  background: linear-gradient(90deg, var(--bg) 35%, rgba(5, 6, 8, 0) 100%);
+}
+
+/* Fondu en haut quand la page défile : rien ne passe sous l'horloge. */
+.topfade {
+  position: fixed; top: 0; left: 0; right: 0; height: 170px; z-index: 3; pointer-events: none; opacity: 0;
+  background: linear-gradient(180deg, var(--bg) 45%, rgba(5, 6, 8, 0) 100%);
+  transition: opacity 300ms ease;
+}
+.is-scrolled .topfade { opacity: 1; }
+
+/* --- Aide --- */
+.bottomfade {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 150px; z-index: 3; pointer-events: none;
+  background: linear-gradient(180deg, rgba(5, 6, 8, 0) 0%, var(--bg) 75%);
+}
+.hints {
+  position: fixed; left: var(--left); bottom: 30px; z-index: 4;
+  display: flex; gap: 40px; font-size: 20px; color: var(--text-3);
+}
+.hint kbd {
+  font: inherit; font-weight: 700; color: var(--text-2);
+  padding: 3px 11px; margin-right: 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Feuille modale --- */
+.sheet-backdrop {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 30;
+  background: rgba(0, 0, 0, 0.74);
+  display: flex; align-items: center; justify-content: center;
+}
+.sheet {
+  width: 980px; max-height: 780px; padding: 56px 64px; border-radius: 34px;
+  background: #16181c; box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.sheet-title { font-size: 42px; font-weight: 800; letter-spacing: -0.02em; }
+.sheet-body {
+  margin-top: 22px; font-size: 25px; line-height: 1.45; color: var(--text-2);
+  white-space: pre-line; max-height: 440px; overflow: hidden;
+}
+.sheet-actions { margin-top: 40px; display: flex; gap: 18px; flex-wrap: wrap; }
+.sheet-btn {
+  padding: 18px 34px; border-radius: 16px; font-size: 25px; font-weight: 700;
+  color: var(--text); background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: transform 140ms var(--ease), background-color 140ms ease, color 140ms ease;
+}
+.sheet-btn.is-focused { background: #fff; color: #000; transform: scale(1.05); }
+
+/* --- Notification --- */
+.toast {
+  position: fixed; left: 50%; bottom: 90px; z-index: 40;
+  transform: translate(-50%, 16px); opacity: 0;
+  padding: 18px 32px; border-radius: 18px; background: rgba(34, 36, 40, 0.97); color: var(--text);
+  font-size: 23px; font-weight: 500; max-width: 1500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: opacity 180ms ease, transform 220ms var(--ease);
+}
+.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.toast-error { background: #3a1517; color: #ffd4d1; }

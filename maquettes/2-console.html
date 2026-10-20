@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette 2 — Console</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  body { background: #050608; color: #eef1f4; }
+
+  /* Ambiance : l'illustration du jeu focalisé, très atténuée, en plein écran */
+  .ambient { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.38; }
+  .veil {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(5,6,8,0.2) 0%, rgba(5,6,8,0.75) 55%, #050608 100%),
+      linear-gradient(90deg, #050608 0%, rgba(5,6,8,0) 30%);
+  }
+
+  /* Rail d'icônes */
+  .rail { position: absolute; left: 44px; top: 0; bottom: 0; width: 88px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; z-index: 3; }
+  .ri {
+    position: relative; width: 72px; height: 72px; border-radius: 22px;
+    display: flex; align-items: center; justify-content: center; font-size: 34px;
+    color: rgba(238,241,244,0.5); transition: background-color 160ms ease, color 160ms ease, transform 160ms var(--ease);
+  }
+  .ri.is-current { color: #fff; }
+  .ri.is-current::after { content: ""; position: absolute; left: -14px; top: 26px; width: 5px; height: 20px; border-radius: 3px; background: var(--accent); }
+  .ri.is-focused { background: #fff; color: #000; transform: scale(1.08); }
+  .ri .tip {
+    position: absolute; left: 92px; top: 50%; transform: translate(-8px, -50%); opacity: 0; white-space: nowrap;
+    padding: 10px 18px; border-radius: 12px; background: #fff; color: #000; font-size: 22px; font-weight: 600;
+    transition: opacity 160ms ease, transform 160ms var(--ease);
+  }
+  .ri.is-focused .tip { opacity: 1; transform: translate(0, -50%); }
+
+  .head { position: absolute; left: 200px; right: 110px; top: 64px; display: flex; align-items: flex-end; }
+  .head h1 { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; }
+  .head h1 span { color: rgba(238,241,244,0.4); font-weight: 600; }
+  .head .clock { margin-left: auto; text-align: right; }
+  .head .t { font-size: 36px; font-weight: 500; }
+  .head .d { font-size: 18px; color: rgba(238,241,244,0.55); }
+
+  /* Carrousel : la carte focalisée s'élargit */
+  .carousel { position: absolute; left: 200px; top: 190px; display: flex; gap: 26px; height: 560px; align-items: stretch; }
+  .g {
+    position: relative; width: 286px; border-radius: 30px; overflow: hidden; background: #111;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    transition: width 360ms var(--ease), box-shadow 300ms ease, transform 300ms var(--ease);
+  }
+  .g .art { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+  .g::after {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .g .shade { position: absolute; left: 0; right: 0; bottom: 0; height: 75%; background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,0.85)); }
+  .g .info { position: absolute; left: 34px; right: 34px; bottom: 32px; }
+  .g .n { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; transition: font-size 300ms var(--ease); }
+  .g .more { max-height: 0; opacity: 0; overflow: hidden; transition: opacity 260ms ease 80ms, max-height 300ms var(--ease); }
+  .g .chips { margin-top: 16px; }
+  .g .s { margin-top: 14px; font-size: 22px; line-height: 1.4; color: rgba(238,241,244,0.75); width: 560px; }
+  .g .cta { margin-top: 22px; display: inline-flex; align-items: center; gap: 12px; padding: 14px 28px; border-radius: 14px; background: #fff; color: #000; font-size: 24px; font-weight: 700; }
+  .g.is-focused { width: 760px; box-shadow: 0 0 0 4px #fff, 0 40px 80px rgba(0,0,0,0.7); }
+  .g.is-focused .n { font-size: 60px; }
+  .g.is-focused .more { max-height: 300px; opacity: 1; }
+
+  .sec { position: absolute; left: 200px; top: 800px; font-size: 24px; font-weight: 700; color: rgba(238,241,244,0.6); }
+  .streams { position: absolute; left: 200px; top: 850px; display: flex; gap: 26px; }
+  .streams .card { width: 250px; height: 141px; border-radius: 18px; }
+  .streams .card .name { font-size: 21px; left: 16px; bottom: 12px; }
+</style>
+</head>
+<body>
+  <div class="ambient" data-bind="art"></div>
+  <div class="veil"></div>
+
+  <nav class="rail">
+    <div class="ri is-current" data-f data-keep><span data-icon="pad"></span><span class="tip">Jeux</span></div>
+    <div class="ri" data-f data-keep><span data-icon="tv"></span><span class="tip">Streaming</span></div>
+    <div class="ri" data-f data-keep><span data-icon="star"></span><span class="tip">Favoris</span></div>
+    <div class="ri" data-f data-keep><span data-icon="grid"></span><span class="tip">Toutes les apps</span></div>
+    <div class="ri" data-f data-keep><span data-icon="home"></span><span class="tip">Accueil Samsung</span></div>
+  </nav>
+
+  <header class="head">
+    <h1>Jeux <span>· Cloud gaming</span></h1>
+    <div class="clock"><div class="t" data-clock="time"></div><div class="d" data-clock="date"></div></div>
+  </header>
+
+  <div class="carousel">
+    <div class="g" data-f data-start data-app="xbox"></div>
+    <div class="g" data-f data-app="luna"></div>
+    <div class="g" data-f data-app="gaminghub"></div>
+    <div class="g" data-f data-app="geforce"></div>
+  </div>
+
+  <div class="sec">Streaming</div>
+  <div class="streams">
+    <div class="tile" data-f data-app="netflix" data-card></div>
+    <div class="tile" data-f data-app="youtube" data-card></div>
+    <div class="tile" data-f data-app="canal" data-card></div>
+    <div class="tile" data-f data-app="crunchyroll" data-card></div>
+    <div class="tile" data-f data-app="prime" data-card></div>
+  </div>
+
+  <div class="grain"></div>
+  <div class="toast" id="toast"></div>
+  <div class="label-maquette">Maquette 2 · Console</div>
+  <script>
+    // Construit les cartes de jeu (avant art.js, qui dessine les [data-draw]).
+    Array.prototype.forEach.call(document.querySelectorAll('.g'), function (g) {
+      var k = g.getAttribute('data-app');
+      g.innerHTML = '<div class="art" data-draw="' + k + '"></div><div class="shade"></div>' +
+        '<div class="info"><div class="n"></div><div class="more"><div class="chips"></div><div class="s"></div>' +
+        '<div class="cta"><span data-icon="play"></span>Jouer</div></div></div>';
+    });
+  </script>
+  <script src="art.js"></script>
+  <script>
+    Array.prototype.forEach.call(document.querySelectorAll('.g'), function (g) {
+      var a = TVArt.APPS[g.getAttribute('data-app')];
+      g.querySelector('.n').textContent = a.title;
+      g.querySelector('.s').textContent = a.sub;
+      g.querySelector('.chips').innerHTML = a.meta.split('|').map(function (m) { return '<span>' + m + '</span>'; }).join('');
+    });
+  </script>
+  <script src="maquette.js"></script>
+</body>
+</html>

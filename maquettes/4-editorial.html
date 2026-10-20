@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette 4 — Éditorial</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  body { background: #060606; color: #fafafa; }
+
+  .top { position: absolute; top: 58px; left: 120px; right: 120px; display: flex; justify-content: space-between; align-items: baseline; z-index: 3; }
+  .brand { font-size: 20px; font-weight: 700; letter-spacing: 0.34em; text-transform: uppercase; color: rgba(250,250,250,0.55); }
+  .clock { font-size: 22px; color: rgba(250,250,250,0.5); }
+  .clock b { color: #fafafa; font-weight: 600; margin-right: 14px; }
+
+  /* Liste */
+  .listview { position: absolute; left: 120px; top: 140px; width: 840px; bottom: 0; overflow: hidden; }
+  .listview::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 200px; pointer-events: none;
+    background: linear-gradient(180deg, rgba(6,6,6,0) 0%, #060606 85%);
+  }
+  .list { transition: transform 340ms var(--ease); }
+  .cat {
+    display: flex; align-items: center; gap: 18px; margin: 40px 0 12px;
+    font-size: 17px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(250,250,250,0.38);
+  }
+  .cat::after { content: ""; flex: 1; height: 1px; background: rgba(250,250,250,0.1); }
+  .cat:first-child { margin-top: 0; }
+  .item { position: relative; display: flex; align-items: baseline; gap: 26px; padding: 4px 0; }
+  .item .no { width: 44px; font-size: 20px; font-weight: 600; color: rgba(250,250,250,0.22); font-variant-numeric: tabular-nums; transition: color 160ms ease; }
+  .item .lb {
+    font-size: 78px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.08; white-space: nowrap;
+    color: rgba(250,250,250,0.16); transition: color 180ms ease, transform 240ms var(--ease);
+  }
+  .item.is-focused .lb { color: #fafafa; transform: translateX(10px); }
+  .item.is-focused .no { color: var(--accent); }
+
+  /* Panneau */
+  .panel {
+    position: absolute; right: 120px; top: 140px; width: 760px; height: 860px; border-radius: 44px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.06);
+    overflow: hidden; background: #111;
+  }
+  .panel .art-host { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+  .panel::after {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.88) 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .panel-text { position: absolute; left: 56px; right: 56px; bottom: 54px; z-index: 2; }
+  .pk { font-size: 19px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(250,250,250,0.7); }
+  .pt { font-size: 72px; font-weight: 800; letter-spacing: -0.035em; margin-top: 10px; line-height: 1; }
+  .panel-text .chips { margin-top: 20px; }
+  .ps { font-size: 25px; line-height: 1.42; color: rgba(250,250,250,0.78); margin-top: 18px; }
+  .ok { margin-top: 28px; display: flex; align-items: center; gap: 14px; font-size: 22px; color: rgba(250,250,250,0.7); }
+  .ok b { display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 14px; background: #fafafa; color: #000; font-size: 22px; }
+  .swap { animation: swap 460ms var(--ease); }
+  @keyframes swap { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand">TV Hub</div>
+    <div class="clock"><b data-clock="time"></b><span data-clock="date"></span></div>
+  </div>
+
+  <div class="listview">
+    <div class="list" data-scroll="y" data-pad="170">
+      <div class="cat">Jouer</div>
+      <div class="item" data-f data-start data-app="luna"></div>
+      <div class="item" data-f data-app="xbox"></div>
+      <div class="item" data-f data-app="gaminghub"></div>
+      <div class="cat">Regarder</div>
+      <div class="item" data-f data-app="netflix"></div>
+      <div class="item" data-f data-app="youtube"></div>
+      <div class="item" data-f data-app="canal"></div>
+      <div class="item" data-f data-app="crunchyroll"></div>
+      <div class="item" data-f data-app="prime"></div>
+      <div class="cat">Plus</div>
+      <div class="item" data-f data-app="apps"></div>
+      <div class="item" data-f data-app="home"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="art-host" data-bind="art" data-align="xMaxYMid"></div>
+    <div class="panel-text" id="copy">
+      <div class="pk" data-bind="kind"></div>
+      <div class="pt" data-bind="title"></div>
+      <div class="chips" data-bind="meta"></div>
+      <div class="ps" data-bind="sub"></div>
+      <div class="ok"><b><span data-icon="play"></span>OK</b>Ouvrir</div>
+    </div>
+  </div>
+
+  <div class="grain"></div>
+  <div class="toast" id="toast"></div>
+  <div class="label-maquette">Maquette 4 · Éditorial</div>
+  <script src="art.js"></script>
+  <script>
+    Array.prototype.forEach.call(document.querySelectorAll('.item'), function (el, i) {
+      el.innerHTML = '<span class="no">' + ('0' + (i + 1)).slice(-2) + '</span>' +
+        '<span class="lb">' + TVArt.APPS[el.getAttribute('data-app')].title + '</span>';
+    });
+    document.addEventListener('maquette:focus', function () {
+      var c = document.getElementById('copy');
+      c.classList.remove('swap'); void c.offsetWidth; c.classList.add('swap');
+    });
+  </script>
+  <script src="maquette.js"></script>
+</body>
+</html>

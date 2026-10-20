@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets"
+        xmlns:tizen="http://tizen.org/ns/widgets"
+        id="http://local/tvhub" version="1.0.0" viewmodes="maximized">
+    <tizen:application id="tvhubPerso.TVHub" package="tvhubPerso" required_version="2.3"/>
+    <name>TV Hub</name>
+    <description>Lanceur personnel minimaliste. Aucune donnée envoyée, aucun compte.</description>
+    <author>TV Hub (usage personnel)</author>
+    <content src="index.html"/>
+    <icon src="icon.png"/>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+
+    <!-- Profil TV Samsung (Tizen 6.5 pour les modèles 2022). -->
+    <tizen:profile name="tv-samsung"/>
+
+    <!-- Privilèges publics uniquement. -->
+    <!-- Lancer une autre application installée (tizen.application.launch). -->
+    <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
+    <!-- Lire la liste des applications installées (tizen.application.getAppsInfo). -->
+    <tizen:privilege name="http://tizen.org/privilege/application.info"/>
+    <!-- Enregistrer les touches de couleur de la télécommande. -->
+    <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+
+    <!-- Aucune balise access : l'application n'a aucun accès réseau. -->
+    <tizen:setting screen-orientation="landscape" context-menu="disable"
+                   background-support="disable" encryption="disable"
+                   install-location="auto" hwkey-event="enable"/>
+</widget>

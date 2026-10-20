@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, height=1080, user-scalable=no">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' file: data:; connect-src 'none'; font-src 'self'; media-src 'none'; object-src 'none'">
+  <title>TV Hub</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="ambient" id="ambient" aria-hidden="true"></div>
+    <div class="veil" aria-hidden="true"></div>
+
+    <nav class="rail" id="rail" aria-label="Sections"></nav>
+
+    <div class="clock">
+      <div class="mode-badge" id="modeBadge" hidden>Personnalisation</div>
+      <div>
+        <div class="time" id="clockTime">--:--</div>
+        <div class="date" id="clockDate"></div>
+      </div>
+    </div>
+
+    <main class="viewport" id="viewport">
+      <div class="rows" id="rows"></div>
+    </main>
+    <div class="leftfade" aria-hidden="true"></div>
+    <div class="topfade" aria-hidden="true"></div>
+    <div class="bottomfade" aria-hidden="true"></div>
+
+    <footer class="hints" id="hints"></footer>
+
+    <div class="sheet-backdrop" id="sheetBackdrop" hidden>
+      <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+        <div class="sheet-title" id="sheetTitle"></div>
+        <div class="sheet-body" id="sheetBody"></div>
+        <div class="sheet-actions" id="sheetActions"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="grain" aria-hidden="true"></div>
+  </div>
+
+  <script src="js/catalog.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/platform.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
