@@ -9,13 +9,18 @@ officielle ; **Signalé** = forum / tiers ; **Inconnu** = à vérifier sur la TV
 |---|---|---|
 | Modèle | QE55Q70BATXXC (Q70B, 2022) | Vérifié (photo de l'écran « À propos ») |
 | Firmware | T-PTMDEUC-1720.7 | Vérifié (photo) |
-| Plateforme | Tizen 6.5 pour les TV 2022 | Documenté (Samsung, Web Engine Specifications) |
+| Plateforme | Tizen 6.5 pour les TV 2022 | **Vérifié** sur la TV (`sdb capability` : `platform_version:6.5`, `profile_name:tv`, `can_launch:tv-samsung`) |
 | Moteur web | Chromium M85 | Documenté (idem) |
 | Résolution de l'app | 1920×1080 (vidéo 4K à part) | Documenté (Samsung, General Specifications) |
 | Type d'app retenu | Application web Tizen `.wgt`, profil `tv-samsung` | Choix |
 | Lanceur Android TV | **Incompatible** (Tizen n'exécute pas d'APK) | Documenté |
 
-Outils présents sur le Mac (constaté) : macOS 27.2 **arm64**, Node 20, Java 8, Python 3,
+Connexion de développement (vérifié le 20/10/2026) : mode développeur activé, `sdb connect`
+réussi (`QE55Q70BATXXC`), accès root désactivé sur la TV (`sdbd_rootperm:disabled`) — TV Hub
+n'en a pas besoin. Astuce : si `sdb connect` échoue alors que le port 26101 est ouvert,
+relancer le service avec `sdb kill-server` puis réessayer.
+
+Outils présents sur le Mac (constaté au départ) : macOS 27.2 **arm64**, Node 20, Java 8, Python 3,
 zip. **Tizen Studio, la CLI `tizen` et `sdb` ne sont pas installés.**
 
 ## 2. API utilisées (toutes publiques)

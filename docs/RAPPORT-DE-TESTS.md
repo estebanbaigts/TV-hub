@@ -4,7 +4,7 @@ Date : 20 octobre 2026. Environnement : Mac arm64 (macOS 27.2), Node 20, navigat
 intégré (Chromium récent) émulant 1920×1080, **API Tizen simulée** (`dev/tizen-mock.js`,
 applications fictives).
 
-**Aucun test n'a été fait sur le téléviseur ni dans l'émulateur Samsung.** L'émulateur TV
+**Premiers essais sur le téléviseur (20/10/2026)** : installation réussie, toutes les fonctions répondent ; lenteur signalée, corrigée par une version allégée (à revérifier). L'émulateur Samsung n'a pas été utilisé. L'émulateur TV
 ne fonctionne pas sur Mac Apple Silicon et Tizen Studio n'est pas installé (voir
 [COMPATIBILITE.md](COMPATIBILITE.md)).
 
@@ -69,7 +69,7 @@ ne fonctionne pas sur Mac Apple Silicon et Tizen Studio n'est pas installé (voi
 | Touche Rouge (A) et Retour sur la télécommande physique | Clavier simulé | Télécommande |
 | Restauration du focus après un vrai retour d'app | Événement simulé | Netflix → Home → TV Hub |
 | CPU / mémoire sur la TV | Mesures faites sur Mac | Outils Tizen Studio (si besoin) |
-| Fluidité du carrousel (animation de largeur) et du fondu d'ambiance plein écran | Effets les plus coûteux, non mesurés sur le GPU de la TV | Navigation rapide sur la TV ; repli prévu : désactiver l'ambiance |
+| Fluidité sur la TV | 1re installation (20/10/2026) : **fonctionnel mais très lent**. Version allégée : ambiance plein écran, grain, reflets, ombres floues et animation de largeur supprimés ; ~30 % de travail en moins par appui en simulation | À revérifier sur la TV après réinstallation |
 | Police : Samsung One sur la TV (SF Pro sur le Mac des captures) | Rendu légèrement différent | Visuel sur la TV |
 | Signature, installation, désinstallation | Non autorisé à ce stade | [INSTALLATION.md](INSTALLATION.md) |
 | Démarrage automatique | **Non supporté** (voir [DEMARRAGE.md](DEMARRAGE.md)) | — |

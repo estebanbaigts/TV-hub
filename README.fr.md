@@ -8,8 +8,8 @@ Lanceur personnel minimaliste pour **Samsung QE55Q70BATXXC (QLED 2022)**, firmwa
 Style **« Console »** : rail d'icônes à gauche, grand **carrousel de jeux** dont la carte
 sélectionnée s'élargit (Luna, Xbox, Gaming Hub), carrousels **Streaming**, **Mes
 applications** (favoris), **Toutes les applications**, et **Réglages TV Hub**. Chaque
-service connu a une illustration abstraite originale (aucun logo officiel) qui teinte
-l'ambiance de l'écran. Navigation 100 % télécommande.
+service connu a une illustration abstraite originale (aucun logo officiel). Navigation
+100 % télécommande, allégée pour le processeur ARM de la TV (aucun calque plein écran animé).
 
 ![Aperçu](docs/captures/home.png)
 

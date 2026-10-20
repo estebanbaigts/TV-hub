@@ -51,7 +51,6 @@
   var el = {
     rows: document.getElementById('rows'),
     rail: document.getElementById('rail'),
-    ambient: document.getElementById('ambient'),
     hints: document.getElementById('hints'),
     badge: document.getElementById('modeBadge'),
     time: document.getElementById('clockTime'),
@@ -428,26 +427,6 @@
       if (track) track.classList.remove('no-anim');
     }
 
-    if (tile) setAmbient(tile);
-  }
-
-  // Ambiance : fondu entre deux calques, déclenché après une courte pause (navigation rapide = pas de travail).
-  var ambientTimer = null, ambientKey = null;
-  function setAmbient(tile) {
-    var key = tile.art ? tile.art + '|' + tile.accent : 'none';
-    document.documentElement.style.setProperty('--accent', tile.accent);
-    if (key === ambientKey) return;
-    clearTimeout(ambientTimer);
-    ambientTimer = setTimeout(function () {
-      ambientKey = key;
-      var layer = h('div', 'amb-layer');
-      if (tile.art) layer.innerHTML = A.svg(tile.art, tile.accent);
-      el.ambient.appendChild(layer);
-      void layer.offsetWidth;
-      layer.classList.add('is-in');
-      var olds = Array.prototype.slice.call(el.ambient.children, 0, -1);
-      setTimeout(function () { olds.forEach(function (o) { if (o.parentNode) o.parentNode.removeChild(o); }); }, 750);
-    }, 140);
   }
 
   // ---------------------------------------------------------------------------

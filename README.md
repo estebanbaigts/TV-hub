@@ -8,8 +8,8 @@ A minimal personal launcher for a **Samsung QE55Q70BATXXC (2022 QLED)** TV, firm
 **"Console"** style: an icon rail on the left, a large **games carousel** whose selected
 card expands (Luna, Xbox, Gaming Hub), and carousels for **Streaming**, **My apps**
 (favorites), **All apps** and **TV Hub settings**. Every known service gets an original
-abstract illustration (no official logos) that tints the screen's ambient light.
-Fully remote-controlled.
+abstract illustration (no official logos). Fully remote-controlled, and kept light for
+the TV's ARM processor (no full-screen animated layers).
 
 ![Preview](docs/captures/home.png)
 
