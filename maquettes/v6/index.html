@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette — Apple TV (images TMDB)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; cursor: none; background: #000; }
+  body { color: #fff; -webkit-font-smoothing: antialiased; font-family: -apple-system, "SF Pro Display", "SamsungOne", "Helvetica Neue", Arial, sans-serif; }
+
+  /* Bannière plein écran : image du titre tendance sur le service sélectionné */
+  .bd { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000 center / cover no-repeat; opacity: 0; }
+  .bd.on { opacity: 1; }
+  .shade { position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 45%, rgba(0,0,0,.82) 100%),
+                linear-gradient(90deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 50%); }
+  .title { position: absolute; left: 120px; bottom: 380px; max-width: 900px; }
+  .title img { max-width: 620px; max-height: 220px; display: block; }
+  .title .txt { font-size: 92px; font-weight: 800; letter-spacing: -.03em; line-height: 1; text-shadow: 0 4px 30px rgba(0,0,0,.4); }
+  .title .meta { margin-top: 18px; font-size: 24px; color: rgba(255,255,255,.85); text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+  .title .on-svc { display: inline-block; margin-top: 16px; padding: 8px 16px; border-radius: 12px; background: rgba(255,255,255,.18); font-size: 20px; font-weight: 700; }
+
+  .tr { position: absolute; top: 46px; right: 110px; display: flex; align-items: center; gap: 22px; font-size: 26px; font-weight: 600; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+  .tr .wx { font-weight: 500; color: rgba(255,255,255,.85); }
+
+  /* Dock en verre */
+  .dock { position: absolute; left: 90px; right: 90px; bottom: 150px; padding: 26px 30px; border-radius: 38px;
+    background: rgba(255,255,255,.13); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); display: flex; gap: 30px; }
+  .app { width: 240px; height: 140px; border-radius: 24px; background: var(--c); display: flex; align-items: center; justify-content: center;
+    font-size: 34px; font-weight: 800; letter-spacing: -.02em; transition: transform 180ms cubic-bezier(.2,.8,.2,1); flex: 0 0 auto; }
+  .app.on { transform: scale(1.12) translateY(-8px); box-shadow: 0 0 0 3px #fff; }
+  .row2 { position: absolute; left: 120px; right: 90px; bottom: -40px; display: flex; gap: 30px; opacity: .55; }
+  .row2 .app { height: 120px; }
+  .hint { position: absolute; left: 50%; bottom: 112px; transform: translateX(-50%); font-size: 17px; color: rgba(255,255,255,.6); }
+  .credit { position: fixed; right: 24px; bottom: 16px; font-size: 14px; color: rgba(255,255,255,.45); }
+  .note { position: fixed; left: 24px; bottom: 16px; font-size: 14px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.4); }
+</style>
+</head>
+<body>
+  <div class="bd" id="bdA"></div><div class="bd" id="bdB"></div>
+  <div class="shade"></div>
+  <div class="title"><div id="logo"></div><div class="meta" id="meta"></div><div class="on-svc" id="svc"></div></div>
+  <div class="tr"><span class="wx">☁︎ 14° Paris</span><span id="clock"></span></div>
+
+  <div class="dock" id="dock"></div>
+  <div class="hint">Images : titres tendance disponibles sur chaque service en France</div>
+  <div class="row2">
+    <div class="app" style="--c:#5b3df5">Luna</div><div class="app" style="--c:#107c10">Xbox</div>
+    <div class="app" style="--c:#76b900">GeForce</div><div class="app" style="--c:#9146ff">Twitch</div>
+    <div class="app" style="--c:#1db954">Spotify</div><div class="app" style="--c:#333">Toutes</div>
+  </div>
+  <div class="credit">Données et images : TMDB (themoviedb.org) — ce produit utilise l'API TMDB sans être approuvé par TMDB</div>
+  <div class="note">Maquette — ←/→ pour changer d'app</div>
+
+  <script src="key.js"></script>
+  <script>
+    var APPS = [
+      { name: 'Netflix', c: '#e50914', p: 8 }, { name: 'Prime Video', c: '#1aa3ff', p: 119 },
+      { name: 'Disney+', c: '#113ccf', p: 337 }, { name: 'Apple TV', c: '#1c1c1e', p: 350 },
+      { name: 'CANAL+', c: '#111', p: 381 }, { name: 'Crunchyroll', c: '#f47521', p: 283 }
+    ];
+    var K = window.TMDB_KEY, cache = {}, used = {}, idx = 0, front = 'A';
+    var dock = document.getElementById('dock');
+    APPS.forEach(function (a, i) {
+      var d = document.createElement('div'); d.className = 'app' + (i ? '' : ' on'); d.style.setProperty('--c', a.c); d.textContent = a.name; dock.appendChild(d);
+    });
+    function api(path) { return fetch('https://api.themoviedb.org/3' + path + (path.indexOf('?') < 0 ? '?' : '&') + 'api_key=' + K).then(function (r) { return r.json(); }); }
+    function load(a) {
+      if (cache[a.p]) return Promise.resolve(cache[a.p]);
+      return api('/discover/tv?with_watch_providers=' + a.p + '&watch_region=FR&sort_by=popularity.desc&language=fr-FR&with_watch_monetization_types=flatrate&first_air_date.gte=2024-01-01&vote_count.gte=50')
+        .then(function (j) {
+          var s = (j.results || []).filter(function (x) { return x.backdrop_path && !used[x.id]; })[0]; used[s.id] = 1;
+          return api('/tv/' + s.id + '/images?include_image_language=fr,en,null').then(function (im) {
+            var logo = (im.logos || [])[0];
+            return cache[a.p] = { name: s.name, year: (s.first_air_date || '').slice(0, 4), bd: 'https://image.tmdb.org/t/p/w1280' + s.backdrop_path,
+              logo: logo ? 'https://image.tmdb.org/t/p/w500' + logo.file_path : null };
+          });
+        });
+    }
+    function show() {
+      var a = APPS[idx];
+      load(a).then(function (t) {
+        if (APPS[idx] !== a) return;
+        var nb = front === 'A' ? 'B' : 'A';
+        var el = document.getElementById('bd' + nb);
+        var img = new Image(); img.onload = function () {
+          el.style.backgroundImage = 'url(' + t.bd + ')'; el.classList.add('on');
+          document.getElementById('bd' + front).classList.remove('on'); front = nb;
+        }; img.src = t.bd;
+        document.getElementById('logo').innerHTML = t.logo ? '<img src="' + t.logo + '" alt="">' : '<div class="txt">' + t.name + '</div>';
+        document.getElementById('meta').textContent = 'Série · ' + t.year;
+        document.getElementById('svc').textContent = 'Sur ' + a.name + ' · OK pour ouvrir';
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      var d = e.keyCode === 39 ? 1 : e.keyCode === 37 ? -1 : 0;
+      if (!d) return;
+      var n = Math.max(0, Math.min(APPS.length - 1, idx + d)); if (n === idx) return;
+      dock.children[idx].classList.remove('on'); idx = n; dock.children[idx].classList.add('on'); show();
+    });
+    (function tick() { var n = new Date(); document.getElementById('clock').textContent = ('0' + n.getHours()).slice(-2) + ':' + ('0' + n.getMinutes()).slice(-2); setTimeout(tick, 30000); })();
+    show();
+    var m = location.search.match(/i=(\d)/); if (m) { idx = +m[1]; Array.prototype.forEach.call(dock.children, function (c, i) { c.classList.toggle('on', i === idx); }); show(); }
+  </script>
+</body>
+</html>
