@@ -8,7 +8,7 @@
   var KEY = 'tvhub.prefs.v1';
 
   function defaults() {
-    return { order: {}, favorites: [], lastFocus: null, theme: null };
+    return { order: {}, favorites: [], hidden: [], lastFocus: null, theme: null };
   }
 
   function load() {
@@ -19,6 +19,7 @@
       return {
         order: p && typeof p.order === 'object' && p.order ? p.order : {},
         favorites: p && Array.isArray(p.favorites) ? p.favorites : [],
+        hidden: p && Array.isArray(p.hidden) ? p.hidden : [],
         lastFocus: p && p.lastFocus ? p.lastFocus : null,
         theme: p && typeof p.theme === 'string' ? p.theme : null
       };

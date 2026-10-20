@@ -5,7 +5,8 @@ src = open(os.path.join(root, "app", "index.html"), encoding="utf-8").read()
 head = '<meta charset="utf-8">'
 assert head in src
 src = src.replace(head, head + '\n  <!-- GÉNÉRÉ par scripts/make_dev_page.py : ne pas modifier à la main. -->\n  <base href="../app/">', 1)
-src = src.replace("<title>TV Hub</title>", "<title>TV Hub (simulation)</title>")
+import re
+src = re.sub(r"<title>(.*?)</title>", r"<title>\1 (simulation)</title>", src, count=1)
 first = '<script src="js/catalog.js"></script>'
 assert first in src
 src = src.replace(first, '<script src="../dev/tizen-mock.js"></script>\n  <script src="../dev/e2e.js"></script>\n  ' + first, 1)

@@ -2,7 +2,7 @@
 
 [English](README.md) · **Français**
 
-Lanceur personnel minimaliste pour **Samsung QE55Q70BATXXC (QLED 2022)**, firmware
+Lanceur personnel minimaliste — affiché sur la TV sous le nom **Accueil+** — pour **Samsung QE55Q70BATXXC (QLED 2022)**, firmware
 **T-PTMDEUC-1720.7**, plateforme **Tizen 6.5** (moteur web Chromium M85).
 
 Design **« Aurore »** (premium et coloré, trois thèmes : Aurore, Coucher de soleil, Océan) : rail d'icônes en verre flottant à gauche, grand **carrousel de jeux** dont la carte

@@ -57,6 +57,21 @@ Limites connues :
 Repli si une app n'est pas détectée ou refuse le lancement : message clair et chemin
 manuel (accueil Samsung → Gaming Hub, ou touche Home). Aucun bouton factice.
 
+## 3 bis. Constaté sur la TV (20/10/2026)
+
+Liste du panneau Applications relevée avec `sdb shell 0 vd_applist` (lecture seule) :
+37 apps, dont **Amazon Luna** (`CmeyUlnhYY.LunaWebApp`), **Xbox** (`GHI3a0zMSx.XboxGamePass`),
+**GeForce NOW**, **Boosteroid**, **Utomik**, **Twitch**, Netflix (`org.tizen.netflix-app`),
+YouTube, Prime Video, Disney+, Apple TV, CANAL+ (deux paquets), TF1+, M6+, france.tv,
+ARTE, Molotov, Spotify, Crunchyroll… TV Hub les détecte et les ouvre : l'utilisateur
+rapporte que **tout est fonctionnel**, y compris les tuiles Jeux.
+
+Filtrage de « Toutes les applications » (le système liste aussi des dizaines d'apps
+internes) : on garde les identifiants du Store (`XXXXXXXXXX.Nom`) et les 4 apps
+préinstallées visibles relevées ci-dessus (`org.tizen.netflix-app`, `org.tizen.primevideo`,
+`org.tizen.browser`, `com.samsung.tv.ariavideo`) ; on écarte eManual, Security Center,
+Services d'intérêt général et Bixby ; on fusionne les doublons de nom.
+
 ## 4. Émulateur
 
 Samsung indique sur ses forums (2021–2023) que l'émulateur TV de Tizen Studio

@@ -104,20 +104,23 @@
     }
 
     var order = state.prefs.order;
+    var hidden = state.prefs.hidden;
+    function visible(t) { return hidden.indexOf(t.tid) === -1; }
     var rows = {
-      games: S.applyOrder(sectionTiles('games'), order.games),
-      streaming: S.applyOrder(sectionTiles('streaming'), order.streaming),
+      games: S.applyOrder(sectionTiles('games'), order.games).filter(visible),
+      streaming: S.applyOrder(sectionTiles('streaming'), order.streaming).filter(visible),
       favorites: state.prefs.favorites
-        .filter(function (tid) { return byTid[tid]; })
+        .filter(function (tid) { return byTid[tid] && hidden.indexOf(tid) === -1; })
         .map(function (tid) { return byTid[tid]; }),
-      all: apps.map(appTile),
+      all: apps.map(appTile).filter(visible),
       system: [
         actionTile('edit', state.mode === 'browse' ? 'Personnaliser' : 'Terminer', 'star', toggleEdit),
         actionTile('theme', 'Thème : ' + currentTheme().label, 'tv', cycleTheme),
         actionTile('status', 'État des services', 'grid', showStatus),
         actionTile('samsung', 'Accueil Samsung', 'home', quitToSamsung),
+        hidden.length ? actionTile('unhide', 'Réafficher les apps masquées (' + hidden.length + ')', 'grid', unhideAll) : null,
         actionTile('reset', 'Réinitialiser', 'gear', confirmReset)
-      ]
+      ].filter(Boolean)
     };
     // Une section en grille devient plusieurs lignes de navigation (même def, `first`/`last`).
     state.rows = [];
@@ -221,12 +224,36 @@
     if (tile.art) {
       node.style.setProperty('--ring', hexA(tile.accent, 0.45));
       node.style.setProperty('--tint', tile.accent);
+      node.style.setProperty('--tint-a', tile.accent);
+      node.style.setProperty('--tint-b', hexA(tile.accent, 0.35));
     } else {
       var hue = hueOf(tile.label);
       node.style.setProperty('--tint-a', 'hsl(' + hue + ',85%,62%)');
       node.style.setProperty('--tint-b', 'hsl(' + ((hue + 40) % 360) + ',72%,40%)');
       node.style.setProperty('--ring', 'hsla(' + hue + ',90%,70%,0.45)');
     }
+  }
+
+  /**
+   * Visuel d'une tuile : l'icône fournie par la TV (fichier local) si elle existe,
+   * sinon l'illustration du service, sinon un monogramme. En cas d'erreur de chargement
+   * de l'icône, on bascule sur le secours.
+   */
+  function visual(container, tile, align) {
+    var src = iconSrc(tile.iconPath);
+    function fallback() {
+      container.classList.remove('has-icon');
+      container.insertBefore(artNode(tile, align), container.firstChild);
+      if (!tile.art) container.insertBefore(h('div', 'mono', monogram(tile.label)), container.children[1] || null);
+    }
+    if (!src) { fallback(); return; }
+    container.classList.add('has-icon');
+    var img = document.createElement('img');
+    img.className = 'icon';
+    img.alt = '';
+    img.onerror = function () { img.remove(); fallback(); };
+    img.src = src;
+    container.insertBefore(img, container.firstChild);
   }
 
   function artNode(tile, align) {
@@ -247,8 +274,8 @@
     var node = h('div', 'tile tile-carousel is-' + tile.status);
     node.setAttribute('data-tid', tile.tid);
     paint(node, tile);
-    node.appendChild(artNode(tile, 'xMaxYMid'));
     node.appendChild(h('div', 'shade'));
+    visual(node, tile, 'xMaxYMid');
     if (tile.status === 'missing') node.appendChild(h('div', 'tag', 'Non détectée'));
 
     var info = h('div', 'info');
@@ -273,18 +300,7 @@
     node.setAttribute('data-tid', tile.tid);
     paint(node, tile);
     var card = h('div', 'card');
-    card.appendChild(artNode(tile));
-
-    var src = iconSrc(tile.iconPath);
-    if (src && !tile.art) {
-      var img = document.createElement('img');
-      img.alt = '';
-      img.src = src;
-      img.onerror = function () { img.remove(); card.classList.remove('has-icon'); };
-      card.classList.add('has-icon');
-      card.appendChild(img);
-    }
-    if (!tile.art) card.appendChild(h('div', 'mono', monogram(tile.label)));
+    visual(card, tile);
     card.appendChild(h('div', 'name', tile.label));
 
     if (tile.status === 'missing') card.appendChild(h('div', 'tag', 'Non détectée'));
@@ -556,6 +572,9 @@
         run: function () { closeSheet(); toggleFavorite(tile); }
       });
     }
+    if (tile.kind !== 'action') {
+      actions.push({ label: 'Masquer', run: function () { closeSheet(); hideTile(tile); } });
+    }
     if (!actions.length) { toast('Aucune option pour cette tuile.'); return; }
     actions.push({ label: 'Annuler', run: closeSheet });
     openSheet(tile.label, null, actions);
@@ -568,6 +587,21 @@
     S.save(state.prefs);
     rebuild();
     toast(i === -1 ? tile.label + ' ajoutée aux favoris.' : tile.label + ' retirée des favoris.');
+  }
+
+  function hideTile(tile) {
+    if (state.prefs.hidden.indexOf(tile.tid) === -1) state.prefs.hidden.push(tile.tid);
+    S.save(state.prefs);
+    rebuild();
+    toast(tile.label + ' masquée. Réglages TV Hub → « Réafficher » pour la remettre.');
+  }
+
+  function unhideAll() {
+    var n = state.prefs.hidden.length;
+    state.prefs.hidden = [];
+    S.save(state.prefs);
+    rebuild();
+    toast(n + ' app(s) réaffichée(s).');
   }
 
   function startMove(r) {
@@ -600,7 +634,7 @@
     var d = state.discovery;
     var lines = [];
     if (P.isMock()) lines.push('⚠ Mode simulation (données fictives de test, pas un téléviseur).');
-    lines.push(d.ok ? 'Applications listées par le système : ' + d.apps.length
+    lines.push(d.ok ? 'Applications : ' + d.apps.length + ' affichées sur ' + d.rawCount + ' listées par le système'
       : 'Liste des applications indisponible : ' + d.reason);
     state.services.forEach(function (s) {
       if (s.optional && !s.app) return;
@@ -766,6 +800,8 @@
 
   function discover(focusTid) {
     P.listApps(function (res) {
+      res.rawCount = res.apps.length;
+      res.apps = C.userApps(res.apps); // seulement les apps du panneau Applications de la TV
       state.discovery = res;
       state.services = C.resolve(res.apps);
       buildRows();

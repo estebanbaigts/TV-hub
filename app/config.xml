@@ -3,7 +3,7 @@
         xmlns:tizen="http://tizen.org/ns/widgets"
         id="http://local/tvhub" version="1.0.0" viewmodes="maximized">
     <tizen:application id="tvhubPerso.TVHub" package="tvhubPerso" required_version="2.3"/>
-    <name>TV Hub</name>
+    <name>Accueil+</name>
     <description>Lanceur personnel minimaliste. Aucune donnée envoyée, aucun compte.</description>
     <author>TV Hub (usage personnel)</author>
     <content src="index.html"/>

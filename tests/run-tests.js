@@ -118,6 +118,28 @@ test('les services de jeu absents ont une explication', function () {
     .forEach(function (s) { assert.ok(s.missing && s.missing.length > 20, s.key); });
 });
 
+test('filtre : apps du Store et préinstallées visibles gardées, apps internes et utilitaires écartés', function () {
+  var keep = [
+    { id: 'org.tizen.netflix-app', name: 'Netflix' }, { id: 'Jz7aUrV2Q4.Twitch', name: 'Twitch' },
+    { id: 'E0P3lRI4H7.MYTF1', name: 'TF1+ : Streaming, TV en Direct' }, { id: 'com.samsung.tv.ariavideo', name: 'Apple TV' }
+  ];
+  var drop = [
+    { id: 'org.tizen.settings', name: 'Paramètres' }, { id: 'com.samsung.tv.bixbypromotion', name: 'Bixby' },
+    { id: 'g0l3ad0res.emanual', name: 'eManual' }, { id: 'J9fZJDMi1v.SecurityCenter', name: 'Security Center' },
+    { id: 'P6mKfXI3eC.FRPublicValueApp', name: 'Services d\u2019intérêt général' }
+  ];
+  keep.forEach(function (a) { assert.ok(Catalog.isUserApp(a), 'devrait garder ' + a.name); });
+  drop.forEach(function (a) { assert.ok(!Catalog.isUserApp(a), 'devrait écarter ' + a.name); });
+});
+test('filtre : doublons de nom fusionnés (deux paquets CANAL+)', function () {
+  var out = Catalog.userApps([{ id: 'QmpwflxWdt.CanalPlusLauncher', name: 'CANAL+' }, { id: 'guMmq95nKK.CanalPlusLauncher', name: 'CANAL+' }]);
+  assert.strictEqual(out.length, 1);
+});
+test('catalogue : TF1+, M6+, france.tv reconnus', function () {
+  var r = Catalog.resolve([{ id: 'a', name: 'TF1+ : Streaming, TV en Direct' }, { id: 'b', name: 'M6+ : Streaming et Tv Replay' }, { id: 'c', name: 'france.tv' }]);
+  ['tf1', 'm6', 'francetv'].forEach(function (k) { assert.ok(r.filter(function (s) { return s.key === k; })[0].app, k); });
+});
+
 console.log('Contrôles statiques du paquet');
 function walk(dir) {
   return fs.readdirSync(dir).reduce(function (acc, f) {

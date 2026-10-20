@@ -10,7 +10,7 @@ ne fonctionne pas sur Mac Apple Silicon et Tizen Studio n'est pas installé (voi
 
 ## 1. Vérifié (dans la simulation)
 
-### Tests unitaires et statiques — `node tests/run-tests.js` : 19/19
+### Tests unitaires et statiques — `node tests/run-tests.js` : 22/22
 
 - Navigation : bornes gauche/droite/haut/bas, sans bouclage ; colonne bornée ; mémoire
   de colonne par rangée ; rangées vides sautées ; **déterminisme sur 10 000 touches**
@@ -24,7 +24,7 @@ ne fonctionne pas sur Mac Apple Silicon et Tizen Studio n'est pas installé (voi
   publics, aucune balise `access` ; pas de CSS/JS récent incompatible avec Chromium M85
   (`inset`, `?.`, `??`, `aspect-ratio`, flou…).
 
-### Bout en bout dans le navigateur — `dev/?e2e=1` : 38/38
+### Bout en bout dans le navigateur — `dev/?e2e=1` : 44/44
 
 | Comportement | Résultat |
 |---|---|
@@ -37,6 +37,8 @@ ne fonctionne pas sur Mac Apple Silicon et Tizen Studio n'est pas installé (voi
 | Carrousel : la carte de jeu focalisée est dépliée | OK |
 | Carrousels : la dernière carte devient entièrement visible, la première sort à gauche, retour exact au début | OK |
 | Thème (Réglages → Thème) : fond changé et mémorisé | OK |
+| Filtrage des apps : apps internes et utilitaires écartés, doublons fusionnés, préinstallées visibles gardées | OK |
+| Icônes réelles des apps ; icône illisible → illustration de secours | OK |
 | Lancement avec l'**identifiant découvert** (Netflix) | OK |
 | Retour d'une app (événement `visibilitychange`) → **focus restauré** | OK |
 | Échec de lancement → message d'erreur avec la cause (`NotFoundError`) | OK |

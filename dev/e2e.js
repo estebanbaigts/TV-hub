@@ -68,7 +68,12 @@
     check('focus initial sur la première app disponible (Xbox)', focused() === 'svc:xbox', focused());
     check('Luna absente affichée « Non détectée »', !!document.querySelector('[data-tid="svc:luna"].is-missing'));
     var all = rowTids('all');
-    check('app de service masquée exclue', all.indexOf('app:mock.service') === -1);
+    check('app de service masquée exclue', all.indexOf('app:MockServic.Service') === -1);
+    check('app système interne filtrée', all.indexOf('app:com.samsung.tv.settings') === -1);
+    check('utilitaire eManual filtré', all.indexOf('app:MockManual.emanual') === -1);
+    check('app préinstallée visible gardée (Internet)', all.indexOf('app:org.tizen.browser') !== -1);
+    check('doublon CANAL+ fusionné', all.filter(function (t) { return /Canal/.test(t); }).length === 1, all.filter(function (t) { return /Canal/.test(t); }).join(','));
+    check('icône réelle affichée si disponible (YouTube)', !!document.querySelector('[data-tid="svc:youtube"] img.icon'));
     check('TV Hub ne se liste pas lui-même', all.indexOf('app:tvhubPerso.TVHub') === -1);
     check('Disney+ (optionnelle, absente) non affichée', !document.querySelector('[data-tid="svc:disney"]'));
 
@@ -101,7 +106,7 @@
 
     // Lancement réussi + restauration du focus.
     press(KEY.D); press(KEY.OK); await wait(300);
-    check('Netflix : lancement demandé avec l’id découvert', window.__launches[window.__launches.length - 1] === 'mock.netflix');
+    check('Netflix : lancement demandé avec l’id découvert', window.__launches[window.__launches.length - 1] === 'org.tizen.netflix-app');
     document.dispatchEvent(new Event('visibilitychange')); await wait(300);
     check('retour d’app : focus restauré sur Netflix', focused() === 'svc:netflix', focused());
 
@@ -138,7 +143,7 @@
     var btns = Array.prototype.map.call(document.querySelectorAll('.sheet-btn'), function (b) { return b.textContent; });
     check('options : Ajouter aux favoris', btns[0] === 'Ajouter aux favoris', btns.join('|'));
     press(KEY.OK); await wait(20);
-    check('favori ajouté', rowTids('favorites').indexOf('app:mock.broken') !== -1);
+    check('favori ajouté', rowTids('favorites').indexOf('app:MockBroken.Broken') !== -1);
 
     // Déplacement dans Streaming et persistance.
     var g3 = 0;
@@ -155,6 +160,10 @@
     check('ordre enregistré localement', saved.order.streaming[1] === 'svc:netflix');
     press(KEY.BACK);
     check('Retour quitte la personnalisation', !document.body.classList.contains('mode-edit'));
+
+    function xboxFallback() { return !!document.querySelector('[data-tid="svc:xbox"] .art svg') && !document.querySelector('[data-tid="svc:xbox"] img.icon'); }
+    for (var g7 = 0; g7 < 40 && !xboxFallback(); g7++) await wait(50); // l'erreur de chargement est asynchrone
+    check('icône illisible → illustration de secours (Xbox)', xboxFallback());
 
     // Thème : Réglages → « Thème » change le fond et est mémorisé.
     var g6 = 0;
