@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Maquette A+D — Verre</title>
+<link rel="stylesheet" href="../v2/v2.css">
+<style>
+  /* Fond précalculé (image fixe) : choisi via ?bg=nuit|graphite|aube */
+  body { background: #0a0b16 url(img/bg-nuit.jpg) center / cover no-repeat; --panel: rgba(255,255,255,.07); --line: rgba(255,255,255,.14); }
+  body.bg-graphite { background-image: url(img/bg-graphite.jpg); }
+  body.bg-aube { background-image: url(img/bg-aube.jpg); }
+
+  /* Verre : blanc très léger + liseré + reflet en haut (sans flou) */
+  .glass2 {
+    background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.05) 100%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .rail { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+
+  .side { position: absolute; left: 150px; top: 56px; bottom: 56px; width: 520px; display: flex; flex-direction: column; gap: 24px; }
+  .side .widget { border-radius: 30px; }
+  .weather .now { display: flex; align-items: center; gap: 20px; margin: 16px 0 6px; }
+  .weather .now .big { font-size: 100px; line-height: 1; }
+  .weather .forecast { margin-top: 20px; }
+  .day { background: rgba(255,255,255,.07); }
+  .news { flex: 1; }
+  .news .list { margin-top: 8px; }
+  .news-item { border-top-color: rgba(255,255,255,.1); }
+
+  .main { position: absolute; left: 710px; right: 110px; top: 56px; bottom: 56px; }
+  .head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; }
+  .head h1 { font-size: 50px; font-weight: 800; letter-spacing: -.03em; }
+  .head h1 span { color: rgba(255,255,255,.5); font-weight: 600; }
+
+  /* Grande carte (Bento) : image de l'app + infos en verre */
+  .hero { position: relative; height: 420px; border-radius: 34px; padding: 14px; display: flex; gap: 0; }
+  .hero .pic { position: relative; flex: 1; border-radius: 24px; overflow: hidden; }
+  .hero .pic svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .hero .info {
+    position: absolute; left: 38px; bottom: 38px; width: 560px; padding: 26px 30px; border-radius: 24px;
+    background: rgba(12,12,28,.45); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+  }
+  .hero .info h2 { font-size: 54px; font-weight: 800; letter-spacing: -.03em; }
+  .hero .info p { font-size: 22px; margin-top: 6px; color: rgba(255,255,255,.88); }
+  .hero .info .cta { display: inline-block; margin-top: 16px; padding: 12px 28px; border-radius: 16px; background: #fff; color: #111; font-size: 22px; font-weight: 800; }
+  .hero.is-focused { box-shadow: 0 0 0 4px #fff, 0 0 0 12px rgba(255,255,255,.18), inset 0 0 0 1px rgba(255,255,255,.14); }
+  .ph { position: absolute; top: 26px; right: 26px; font-size: 14px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border-radius: 8px; background: rgba(0,0,0,.35); }
+
+  .sec { font-size: 24px; font-weight: 700; margin: 30px 0 16px; color: rgba(255,255,255,.82); }
+  .row { display: flex; gap: 20px; }
+
+  /* Carte d'app en verre transparent : l'image de l'app à l'intérieur, nom en dessous */
+  .gcard {
+    width: 252px; padding: 10px 10px 0; border-radius: 26px;
+    transition: transform 160ms var(--ease);
+  }
+  .gcard .pic { position: relative; height: 132px; border-radius: 18px; overflow: hidden; }
+  .gcard .pic svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .gcard .nm { padding: 12px 6px 14px; font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gcard.is-focused { transform: scale(1.07); box-shadow: 0 0 0 4px #fff, inset 0 0 0 1px rgba(255,255,255,.14); background: rgba(255,255,255,.16); }
+</style>
+</head>
+<body>
+  <nav class="rail">
+    <div class="ri is-current" data-f data-keep><span data-icon="home"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="pad"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="tv"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="grid"></span></div>
+    <div class="ri" data-f data-keep><span data-icon="gear"></span></div>
+  </nav>
+
+  <aside class="side">
+    <section class="widget weather glass2" data-f data-keep data-title="Météo détaillée">
+      <span class="sample">Exemple</span>
+      <div class="w-label"><span data-icon="cloud"></span>Météo</div>
+      <div class="now"><div class="big" data-w="icon"></div><div><div class="temp" data-w="temp"></div><div class="cond" data-w="cond"></div></div></div>
+      <div class="city"><span data-w="city"></span> · <span data-w="range"></span></div>
+      <div class="forecast" data-w="forecast"></div>
+    </section>
+    <section class="widget news glass2">
+      <span class="sample">Exemple</span>
+      <div class="w-label"><span data-icon-news></span>À la une</div>
+      <div class="list" data-w="news" data-max="3"></div>
+    </section>
+  </aside>
+
+  <main class="main">
+    <div class="head">
+      <h1><span data-clock="hello" style="color:#fff;font-weight:800"></span> <span>· prêt à jouer ?</span></h1>
+      <div style="text-align:right"><div class="clock-t" data-clock="time"></div><div class="clock-d" data-clock="date"></div></div>
+    </div>
+
+    <section class="hero glass2" data-f data-start data-keep data-title="Amazon Luna">
+      <div class="pic" data-pic="luna"></div>
+      <span class="ph">Image de l'app (provisoire)</span>
+      <div class="info"><h2>Amazon Luna</h2><p>Reprenez votre partie en un clic.</p><span class="cta">▶ Jouer</span></div>
+    </section>
+
+    <div class="sec">Jouer</div>
+    <div class="row">
+      <div class="gcard glass2" data-f data-keep data-title="Xbox" data-pic="xbox"></div>
+      <div class="gcard glass2" data-f data-keep data-title="GeForce NOW" data-pic="geforce"></div>
+      <div class="gcard glass2" data-f data-keep data-title="Gaming Hub" data-pic="gaminghub"></div>
+      <div class="gcard glass2" data-f data-keep data-title="Twitch" data-pic="tint" data-accent="#9146ff"></div>
+    </div>
+    <div class="sec">Regarder</div>
+    <div class="row">
+      <div class="gcard glass2" data-f data-keep data-title="Netflix" data-pic="netflix"></div>
+      <div class="gcard glass2" data-f data-keep data-title="YouTube" data-pic="youtube"></div>
+      <div class="gcard glass2" data-f data-keep data-title="Prime Video" data-pic="prime"></div>
+      <div class="gcard glass2" data-f data-keep data-title="CANAL+" data-pic="canal"></div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <div class="label-maquette">Maquette A+D · cartes en verre — images provisoires, données d'exemple</div>
+  <script>
+    var bg = (location.search.match(/bg=(\w+)/) || [])[1];
+    if (bg) document.body.classList.add('bg-' + bg);
+  </script>
+  <script src="../v2/widgets.js"></script>
+  <script src="../art.js"></script>
+  <script>
+    // Image de l'app dans chaque carte de verre (ici : visuel provisoire ; sur la TV : l'image fournie par le système).
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pic]'), function (el) {
+      var host = el.classList.contains('gcard') ? document.createElement('div') : el;
+      if (host !== el) { host.className = 'pic'; el.appendChild(host); var nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = el.dataset.title; el.appendChild(nm); }
+      var k = el.getAttribute('data-pic');
+      host.innerHTML = k === 'tint'
+        ? '<div style="position:absolute;inset:0;background:linear-gradient(140deg,' + el.dataset.accent + ',#20124d)"></div>'
+        : TVArt.svg(k);
+    });
+  </script>
+  <script src="../maquette.js"></script>
+</body>
+</html>
