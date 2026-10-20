@@ -94,7 +94,10 @@
     check('rail → : entre dans Streaming', focused() === 'svc:netflix', focused());
     press(KEY.L); press(KEY.U); press(KEY.R);
     check('rail ↑ puis → : retour sur la carte de jeu mémorisée', focused() === 'svc:luna', focused());
-    check('la carte de jeu focalisée est dépliée', !!document.querySelector('[data-tid="svc:luna"].is-open'));
+    await wait(200);
+    check('carte « à la une » : montre l’app focalisée', document.querySelector('.hero-title').textContent === 'Amazon Luna', document.querySelector('.hero-title').textContent);
+    check('widget météo affiché (simulation)', document.getElementById('wTemp').textContent === '14°' && document.querySelectorAll('.w-day').length === 4);
+    check('widget actualités affiché (simulation)', document.querySelectorAll('.w-item').length === 4);
 
     // Service absent : explication, aucun lancement.
     var before = window.__launches.length;
@@ -118,7 +121,7 @@
     function sx(n) { // position finale dans le repère 1920×1080 : mise en page + décalage demandé
       var tr = n.parentNode;           // (indépendant de l'avancement de l'animation)
       var x = -parseFloat((tr.style.transform.match(/translate3d\((-?[\d.]+)px/) || [0, '0'])[1]);
-      var left = 240 + n.offsetLeft - tr.children[0].offsetLeft - x;
+      var left = n.offsetLeft - tr.children[0].offsetLeft - x; // 0 = début de la zone des rangées
       return { left: left, right: left + n.offsetWidth };
     }
     var allNodes = document.querySelectorAll('.row-all .tile');
@@ -126,11 +129,11 @@
     check('« Toutes les apps » : une seule rangée (carrousel)', document.querySelectorAll('.row-all').length === 1);
     var g4 = 0;
     while (focused() !== lastN.getAttribute('data-tid') && g4++ < 60) press(KEY.R);
-    check('carrousel : la dernière carte est atteinte et entièrement visible', focused() === lastN.getAttribute('data-tid') && sx(lastN).right <= 1920 - 100, Math.round(sx(lastN).right));
-    check('carrousel : la première carte est sortie à gauche', sx(firstN).right < 200, Math.round(sx(firstN).right));
+    check('carrousel : la dernière carte est atteinte et entièrement visible', focused() === lastN.getAttribute('data-tid') && sx(lastN).right <= 1100, Math.round(sx(lastN).right));
+    check('carrousel : la première carte est sortie à gauche', sx(firstN).right < 0, Math.round(sx(firstN).right));
     var g5 = 0;
     while (focused() !== firstN.getAttribute('data-tid') && g5++ < 60) press(KEY.L);
-    check('carrousel : retour au début, première carte à sa place', Math.abs(sx(firstN).left - 240) < 4, Math.round(sx(firstN).left));
+    check('carrousel : retour au début, première carte à sa place', Math.abs(sx(firstN).left) < 4, Math.round(sx(firstN).left));
 
     press(KEY.OK); await wait(300);
     var t = document.getElementById('toast');

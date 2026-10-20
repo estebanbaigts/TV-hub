@@ -19,8 +19,9 @@ service connu a une illustration abstraite originale (aucun logo officiel). Navi
 ## Principes
 
 - Application web Tizen standard (`.wgt`), privilèges **publics** uniquement.
-- Aucun accès réseau (pas de balise `access`, CSP `connect-src 'none'`), aucun compte,
-  aucune analyse, aucune télémétrie. Préférences stockées localement dans l'app.
+- Accès réseau **limité aux widgets** : Open-Meteo (météo, ville déduite du fuseau horaire de la TV)
+  et le flux RSS franceinfo. Aucun autre site (CSP + `access`), aucun compte, aucune
+  télémétrie. Ces services voient l'adresse IP de la box lors des mises à jour (30 / 60 min).
 - **Aucun identifiant d'application codé en dur.** Les apps sont découvertes au démarrage
   (`tizen.application.getAppsInfo`) et reconnues par leur **nom**. Une tuile n'est
   lançable que si l'app a réellement été trouvée sur la TV.

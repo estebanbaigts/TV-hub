@@ -21,7 +21,11 @@
     <!-- Enregistrer les touches de couleur de la télécommande. -->
     <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
 
-    <!-- Aucune balise access : l'application n'a aucun accès réseau. -->
+    <!-- Accès réseau limité aux widgets (météo, actualités) : ces seuls sites, rien d'autre. -->
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <access origin="https://api.open-meteo.com" subdomains="false"/>
+    <access origin="https://geocoding-api.open-meteo.com" subdomains="false"/>
+    <access origin="https://www.franceinfo.fr" subdomains="false"/>
     <tizen:setting screen-orientation="landscape" context-menu="disable"
                    background-support="disable" encryption="disable"
                    install-location="auto" hwkey-event="enable"/>

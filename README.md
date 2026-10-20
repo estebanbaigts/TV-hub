@@ -19,8 +19,9 @@ the TV's ARM processor (no full-screen animated layers).
 ## Principles
 
 - Standard Tizen web app (`.wgt`) using **public** privileges only.
-- No network access (no `access` element, CSP `connect-src 'none'`), no account, no
-  analytics, no telemetry. Preferences are stored locally inside the app.
+- Network access **limited to the widgets**: Open-Meteo (weather, city derived from the TV's
+  time zone) and the franceinfo RSS feed. No other site (CSP + `access`), no account, no
+  telemetry. These services see the home IP address on refresh (every 30 / 60 min).
 - **No hard-coded app IDs.** Installed apps are discovered at startup
   (`tizen.application.getAppsInfo`) and matched by **name**. A tile can only be launched
   if the app was actually found on the TV.

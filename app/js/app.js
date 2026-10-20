@@ -1,6 +1,7 @@
 /*
- * TV Hub — contrôleur de l'interface (style « Console »).
+ * Accueil+ — contrôleur de l'interface (design « Verre »).
  * Zones : 'content' (rangées) et 'rail' (raccourcis de section, à gauche).
+ * Une carte « à la une » montre en grand l'app focalisée ; les widgets sont gérés par widgets.js.
  * Modes : 'browse' (OK = ouvrir), 'edit' (OK = options de tuile), 'move' (←/→ déplacent la tuile).
  */
 (function () {
@@ -10,33 +11,33 @@
   var K = P.KEYS;
 
   var ROW_DEFS = [
-    { id: 'games', title: 'Jeux', sub: 'Cloud gaming', size: 'carousel', orderable: true },
     // Rangées en carrousel horizontal. (Option `cols: n` : grille qui passe à la ligne.)
-    { id: 'streaming', title: 'Streaming', size: 'md', orderable: true },
+    { id: 'games', title: 'Jouer', size: 'md', orderable: true },
+    { id: 'streaming', title: 'Regarder', size: 'md', orderable: true },
     { id: 'favorites', title: 'Mes applications', size: 'md', orderable: true },
     { id: 'all', title: 'Toutes les applications', size: 'sm', orderable: false },
-    { id: 'system', title: 'Réglages TV Hub', size: 'pill', orderable: false }
+    { id: 'system', title: 'Réglages', size: 'pill', orderable: false }
   ];
 
   // Rail : une entrée par rangée, plus le retour à l'accueil Samsung.
   var RAIL = [
-    { row: 'games', icon: 'pad', label: 'Jeux' },
-    { row: 'streaming', icon: 'tv', label: 'Streaming' },
+    { row: 'games', icon: 'pad', label: 'Jouer' },
+    { row: 'streaming', icon: 'tv', label: 'Regarder' },
     { row: 'favorites', icon: 'star', label: 'Mes applications' },
     { row: 'all', icon: 'grid', label: 'Toutes les applications' },
-    { row: 'system', icon: 'gear', label: 'Réglages TV Hub' },
+    { row: 'system', icon: 'gear', label: 'Réglages' },
     { action: 'samsung', icon: 'home', label: 'Accueil Samsung' }
   ];
 
   var THEMES = [
-    { id: 'aurore', label: 'Aurore' },
-    { id: 'coucher', label: 'Coucher de soleil' },
-    { id: 'ocean', label: 'Océan' }
+    { id: 'nuit', label: 'Nuit' },
+    { id: 'graphite', label: 'Graphite' },
+    { id: 'aube', label: 'Aube' }
   ];
 
-  var CAROUSEL = { w: 250, open: 720, gap: 24 };
-  var VIEW_W = 1920 - 240 - 110;
-  var PEEK = 110; // part visible de la carte voisine quand la rangée défile // zone de contenu : 240 px à gauche (rail + respiration), 110 px à droite
+  // Zone des rangées : de 710 px (après les widgets) à 1810 px (marge droite).
+  var VIEW_W = 1920 - 710 - 110;
+  var PEEK = 90; // part visible de la carte voisine quand la rangée défile
 
   var state = {
     prefs: S.load(),
@@ -50,12 +51,13 @@
     moving: null,
     sheet: null,
     launching: false,
-    openGame: null,    // tid de la carte de jeu dépliée
     scrollX: {}
   };
 
   var el = {
     rows: document.getElementById('rows'),
+    sections: null,   // conteneur des rangées (après la carte « à la une »)
+    hero: null,
     rail: document.getElementById('rail'),
     hints: document.getElementById('hints'),
     badge: document.getElementById('modeBadge'),
@@ -199,8 +201,9 @@
     return words.length > 1 ? (words[0][0] + words[1][0]).toUpperCase() : label.slice(0, 2).toUpperCase();
   }
 
+  var badIcons = {}; // icônes déjà en échec : on ne les redemande pas à chaque rendu
   function iconSrc(path) {
-    if (!path || /^https?:/.test(path)) return ''; // jamais de réseau
+    if (!path || /^https?:/.test(path) || badIcons[path]) return ''; // jamais de réseau
     if (/^(file:|data:)/.test(path)) return path;
     return path.charAt(0) === '/' ? 'file://' + path : '';
   }
@@ -235,11 +238,45 @@
   }
 
   /**
+   * Couleur dominante d'une icône chargée (moyenne des pixels opaques, ravivée).
+   * Peut échouer si le navigateur interdit la lecture de l'image : on garde alors la teinte par défaut.
+   */
+  var colorCache = {};
+  function dominant(img) {
+    if (colorCache[img.src] !== undefined) return colorCache[img.src];
+    var out = null;
+    try {
+      var c = document.createElement('canvas');
+      c.width = c.height = 12;
+      var g = c.getContext('2d');
+      g.drawImage(img, 0, 0, 12, 12);
+      var d = g.getImageData(0, 0, 12, 12).data, r = 0, gr = 0, b = 0, n = 0;
+      for (var i = 0; i < d.length; i += 4) {
+        if (d[i + 3] < 128) continue;
+        var mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]);
+        if (mx > 235 && mn > 235) continue; // blanc (souvent le pictogramme) : ignoré
+        r += d[i]; gr += d[i + 1]; b += d[i + 2]; n++;
+      }
+      if (n) out = [Math.round(r / n), Math.round(gr / n), Math.round(b / n)];
+    } catch (e) { out = null; }
+    colorCache[img.src] = out;
+    return out;
+  }
+
+  function tintFromIcon(node, img) {
+    var c = dominant(img);
+    if (!c) return;
+    node.style.setProperty('--tint-a', 'rgb(' + c.join(',') + ')');
+    node.style.setProperty('--tint-b', 'rgb(' + c.map(function (v) { return Math.round(v * 0.35); }).join(',') + ')');
+    node.style.setProperty('--ring', 'rgba(' + c.join(',') + ',0.5)');
+  }
+
+  /**
    * Visuel d'une tuile : l'icône fournie par la TV (fichier local) si elle existe,
    * sinon l'illustration du service, sinon un monogramme. En cas d'erreur de chargement
    * de l'icône, on bascule sur le secours.
    */
-  function visual(container, tile, align) {
+  function visual(container, tile, align, tintNode) {
     var src = iconSrc(tile.iconPath);
     function fallback() {
       container.classList.remove('has-icon');
@@ -251,7 +288,8 @@
     var img = document.createElement('img');
     img.className = 'icon';
     img.alt = '';
-    img.onerror = function () { img.remove(); fallback(); };
+    img.onerror = function () { badIcons[tile.iconPath] = true; img.remove(); fallback(); };
+    if (tintNode) img.onload = function () { tintFromIcon(tintNode, img); };
     img.src = src;
     container.insertBefore(img, container.firstChild);
   }
@@ -270,43 +308,68 @@
     return box;
   }
 
-  function renderCarouselTile(tile) {
-    var node = h('div', 'tile tile-carousel is-' + tile.status);
-    node.setAttribute('data-tid', tile.tid);
-    paint(node, tile);
-    node.appendChild(h('div', 'shade'));
-    visual(node, tile, 'xMaxYMid');
-    if (tile.status === 'missing') node.appendChild(h('div', 'tag', 'Non détectée'));
-
-    var info = h('div', 'info');
-    info.appendChild(h('div', 'n', tile.label));
-    var more = h('div', 'more');
-    var svc = tile.svc || {};
-    more.appendChild(chips(svc.meta || [], tile.status === 'missing' ? 'Via Gaming Hub' : ''));
-    more.appendChild(h('div', 's', tile.status === 'missing'
-      ? 'Non trouvée parmi les applications installées. OK pour savoir comment y accéder.'
-      : svc.blurb || ''));
-    var cta = h('div', 'cta');
-    cta.innerHTML = A.icon(tile.status === 'missing' ? 'grid' : 'play');
-    cta.appendChild(document.createTextNode(tile.status === 'missing' ? 'En savoir plus' : 'Jouer'));
-    more.appendChild(cta);
-    info.appendChild(more);
-    node.appendChild(info);
-    return node;
-  }
-
   function renderCardTile(tile, def) {
     var node = h('div', 'tile tile-' + def.size + ' is-' + tile.status + ' kind-' + tile.kind);
     node.setAttribute('data-tid', tile.tid);
     paint(node, tile);
     var card = h('div', 'card');
-    visual(card, tile);
+    var pic = h('div', 'pic');
+    visual(pic, tile, null, node);
+    card.appendChild(pic);
     card.appendChild(h('div', 'name', tile.label));
 
     if (tile.status === 'missing') card.appendChild(h('div', 'tag', 'Non détectée'));
     else if (state.mode !== 'browse' && def.id !== 'favorites' && isFavorite(tile.tid)) card.appendChild(h('div', 'tag tag-fav', 'Favori'));
     node.appendChild(card);
     return node;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Carte « à la une »
+  // ---------------------------------------------------------------------------
+
+  function renderHero() {
+    var hero = h('section', 'hero');
+    hero.innerHTML = '<div class="hero-pic"></div><div class="hero-text"><div class="hero-kind"></div>' +
+      '<div class="hero-title"></div><div class="hero-sub"></div><div class="hero-ok"><b>OK</b><span></span></div></div>';
+    el.hero = {
+      root: hero, pic: hero.querySelector('.hero-pic'), kind: hero.querySelector('.hero-kind'),
+      title: hero.querySelector('.hero-title'), sub: hero.querySelector('.hero-sub'), ok: hero.querySelector('.hero-ok span'),
+      tid: null
+    };
+    return hero;
+  }
+
+  var heroTimer = null;
+  function setHero(tile, instant) {
+    if (!el.hero || !tile || tile.kind === 'action') return;
+    clearTimeout(heroTimer);
+    function apply() {
+      if (el.hero.tid === tile.tid) return;
+      el.hero.tid = tile.tid;
+      var H = el.hero, svc = tile.svc || {};
+      paint(H.root, tile);
+      H.pic.innerHTML = '';
+      var src = iconSrc(tile.iconPath);
+      if (tile.art) H.pic.appendChild(artNode(tile));
+      if (src) {
+        var img = document.createElement('img');
+        img.className = 'hero-icon';
+        img.alt = '';
+        img.onload = function () { if (!tile.art) tintFromIcon(H.root, img); };
+        img.onerror = function () { badIcons[tile.iconPath] = true; img.remove(); };
+        img.src = src;
+        H.pic.appendChild(img);
+      } else if (!tile.art) {
+        H.pic.appendChild(h('div', 'mono', monogram(tile.label)));
+      }
+      var section = svc.section === 'games' ? 'Jouer' : svc.section === 'streaming' ? 'Regarder' : 'Application';
+      H.kind.textContent = tile.status === 'missing' ? section + ' · non détectée' : section;
+      H.title.textContent = tile.label;
+      H.sub.textContent = tile.status === 'missing' ? 'Non trouvée parmi les applications installées.' : (svc.blurb || 'Votre application.');
+      H.ok.textContent = tile.status === 'missing' ? 'En savoir plus' : (state.mode === 'browse' ? 'Ouvrir' : 'Options');
+    }
+    if (instant) apply(); else heroTimer = setTimeout(apply, 120); // navigation rapide : une seule mise à jour
   }
 
   function renderPill(tile) {
@@ -319,6 +382,11 @@
 
   function render() {
     var frag = document.createDocumentFragment();
+    var heroTid = el.hero && el.hero.tid;
+    el.rows.innerHTML = '';
+    el.rows.appendChild(renderHero());
+    el.sections = h('div', 'sections');
+    el.rows.appendChild(el.sections);
     state.rows.forEach(function (row, r) {
       var section = h('section', 'row row-' + row.def.id + (row.first ? '' : ' is-cont') + (row.last ? '' : ' is-notlast'));
       section.setAttribute('data-row', r);
@@ -334,23 +402,18 @@
 
       var track = h('div', 'track');
       row.items.forEach(function (tile) {
-        var n = row.def.size === 'carousel' ? renderCarouselTile(tile)
-          : row.def.size === 'pill' ? renderPill(tile)
-          : renderCardTile(tile, row.def);
+        var n = row.def.size === 'pill' ? renderPill(tile) : renderCardTile(tile, row.def);
         track.appendChild(n);
       });
       section.appendChild(track);
       frag.appendChild(section);
     });
-    el.rows.innerHTML = '';
-    el.rows.appendChild(frag);
+    el.sections.appendChild(frag);
     state.scrollX = {};
     lastFocused = null;
-
-    // Carte de jeu dépliée : la dernière visitée, sinon la première.
-    var g = state.rows[rowIndex('games')];
-    if (!state.openGame || !findTile(state.openGame)) state.openGame = g.items.length ? g.items[0].tid : null;
-    setOpenGame(state.openGame);
+    var keep = heroTid && findTile(heroTid);
+    var first = keep ? state.rows[keep.r].items[keep.c] : (state.rows[0].items[0] || null);
+    if (first) setHero(first, true);
 
     renderRail();
     updateFocus(true);
@@ -407,16 +470,6 @@
     });
   }
 
-  function setOpenGame(tid) {
-    state.openGame = tid;
-    var g = rowIndex('games');
-    var track = el.rows.children[g] && el.rows.children[g].querySelector('.track');
-    if (!track) return;
-    Array.prototype.forEach.call(track.children, function (n) {
-      n.classList.toggle('is-open', n.getAttribute('data-tid') === tid);
-    });
-  }
-
   var lastFocused = null;
 
   function updateFocus(instant) {
@@ -432,35 +485,28 @@
     });
     if (p.r < 0) return;
 
-    var section = el.rows.children[p.r];
+    var section = el.sections.children[p.r];
     var track = section.querySelector('.track');
     var node = track.children[p.c];
     var tile = state.rows[p.r].items[p.c];
-    Array.prototype.forEach.call(el.rows.children, function (s, i) { s.classList.toggle('is-active', i === p.r); });
+    Array.prototype.forEach.call(el.sections.children, function (s, i) { s.classList.toggle('is-active', i === p.r); });
 
     if (state.zone === 'content' && node) {
       node.classList.add('is-focused');
       lastFocused = node;
-      if (state.rows[p.r].def.size === 'carousel') setOpenGame(tile.tid);
+      setHero(tile, instant);
       // Le focus provisoire d'avant la détection ne doit pas écraser le focus mémorisé.
       if (state.discovery.reason !== 'pending') state.prefs.lastFocus = tile.tid;
     }
 
     // Défilement horizontal : les premières cartes sortent à gauche pour révéler les suivantes.
-    // Positions mesurées depuis le début de la rangée (le carrousel de jeux sur sa disposition finale).
-    // Une carte voisine dépasse toujours un peu (PEEK) pour montrer qu'il en reste.
+    // Positions mesurées depuis le début de la rangée ; une carte voisine dépasse toujours un peu (PEEK).
     if (node) {
-      var x = state.scrollX[p.r] || 0, left, right, last;
+      var x = state.scrollX[p.r] || 0;
       var n = state.rows[p.r].items.length;
-      if (state.rows[p.r].def.size === 'carousel') {
-        left = p.c * (CAROUSEL.w + CAROUSEL.gap);
-        right = left + CAROUSEL.open;
-        last = (n - 1) * (CAROUSEL.w + CAROUSEL.gap) + CAROUSEL.open;
-      } else {
-        left = node.offsetLeft - track.children[0].offsetLeft;
-        right = left + node.offsetWidth;
-        last = track.children[n - 1].offsetLeft - track.children[0].offsetLeft + track.children[n - 1].offsetWidth;
-      }
+      var left = node.offsetLeft - track.children[0].offsetLeft;
+      var right = left + node.offsetWidth;
+      var last = track.children[n - 1].offsetLeft - track.children[0].offsetLeft + track.children[n - 1].offsetWidth;
       var peekL = p.c > 0 ? PEEK : 0, peekR = p.c < n - 1 ? PEEK : 0;
       if (left - peekL - x < 0) x = left - peekL;
       else if (right + peekR - x > VIEW_W) x = right + peekR - VIEW_W;
@@ -469,9 +515,9 @@
       track.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
     }
 
-    // Défilement vertical : la rangée active sous l'horloge (la 1re rangée reste en place).
-    var y = Math.max(0, section.offsetTop - 160);
-    document.body.classList.toggle('is-scrolled', y > 0);
+    // Défilement vertical : 1re rangée → la carte « à la une » reste visible ;
+    // ensuite, la rangée active passe en haut de la zone (les rangées au-dessus sortent entièrement).
+    var y = p.r === 0 ? 0 : Math.max(0, section.offsetTop - 18);
     el.rows.style.transform = 'translate3d(0,' + (-y) + 'px,0)';
     if (instant) {
       el.rows.classList.add('no-anim');
@@ -593,7 +639,7 @@
     if (state.prefs.hidden.indexOf(tile.tid) === -1) state.prefs.hidden.push(tile.tid);
     S.save(state.prefs);
     rebuild();
-    toast(tile.label + ' masquée. Réglages TV Hub → « Réafficher » pour la remettre.');
+    toast(tile.label + ' masquée. Réglages → « Réafficher » pour la remettre.');
   }
 
   function unhideAll() {
@@ -644,17 +690,16 @@
   }
 
   function confirmReset() {
-    openSheet('Réinitialiser TV Hub ?', 'L’ordre des tuiles et les favoris de TV Hub seront effacés. Rien d’autre n’est modifié sur le téléviseur.', [
+    openSheet('Réinitialiser Accueil+ ?', 'L’ordre des tuiles, les favoris et les apps masquées d’Accueil+ seront effacés. Rien d’autre n’est modifié sur le téléviseur.', [
       { label: 'Annuler', run: closeSheet },
       { label: 'Réinitialiser', run: function () {
         closeSheet();
         S.reset();
         state.prefs = S.load();
         state.mode = 'browse';
-        state.openGame = null;
         buildRows();
         rebuild(firstReadyTid());
-        toast('Préférences de TV Hub réinitialisées.');
+        toast('Préférences d’Accueil+ réinitialisées.');
       } }
     ]);
   }
@@ -858,6 +903,7 @@
     });
 
     discover(savedFocus);
+    if (window.TVWidgets) window.TVWidgets.start();
     window.__tvhub = state; // inspection pendant les tests
   }
 

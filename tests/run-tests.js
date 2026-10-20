@@ -9,6 +9,7 @@ var APP = path.join(ROOT, 'app');
 var Nav = require(path.join(APP, 'js/nav.js'));
 var Store = require(path.join(APP, 'js/store.js'));
 var Catalog = require(path.join(APP, 'js/catalog.js'));
+var Widgets = require(path.join(APP, 'js/widgets.js'));
 
 var passed = 0, failed = 0;
 function test(name, fn) {
@@ -140,6 +141,25 @@ test('catalogue : TF1+, M6+, france.tv reconnus', function () {
   ['tf1', 'm6', 'francetv'].forEach(function (k) { assert.ok(r.filter(function (s) { return s.key === k; })[0].app, k); });
 });
 
+console.log('Widgets');
+test('codes météo WMO → libellés', function () {
+  assert.strictEqual(Widgets.describe(0).text, 'Ensoleillé');
+  assert.strictEqual(Widgets.describe(2).icon, 'partly');
+  assert.strictEqual(Widgets.describe(63).text, 'Pluie');
+  assert.strictEqual(Widgets.describe(95).icon, 'storm');
+});
+test('ville déduite du fuseau horaire', function () {
+  assert.strictEqual(Widgets.cityFromTimezone('Europe/Paris'), 'Paris');
+  assert.strictEqual(Widgets.cityFromTimezone('America/New_York'), 'New York');
+  assert.strictEqual(Widgets.cityFromTimezone('Etc/UTC'), null);
+  assert.strictEqual(Widgets.cityFromTimezone(''), null);
+});
+test('durées relatives en français', function () {
+  var now = 1e12;
+  assert.strictEqual(Widgets.ago(now - 20 * 60000, now), 'il y a 20 min');
+  assert.strictEqual(Widgets.ago(now - 3 * 3600000, now), 'il y a 3 h');
+});
+
 console.log('Contrôles statiques du paquet');
 function walk(dir) {
   return fs.readdirSync(dir).reduce(function (acc, f) {
@@ -149,8 +169,10 @@ function walk(dir) {
 }
 var files = walk(APP);
 var text = files.filter(function (f) { return /\.(js|css|html|xml)$/.test(f); });
-test('aucune URL réseau dans le code de l’application', function () {
-  var allowed = /https?:\/\/(www\.w3\.org|tizen\.org|local\/tvhub)/;
+// Seuls sites autorisés : ceux des widgets (météo, actualités), plus les espaces de noms XML.
+var NET_ORIGINS = ['https://api.open-meteo.com', 'https://geocoding-api.open-meteo.com', 'https://www.franceinfo.fr'];
+test('aucune URL réseau hors des 3 sources des widgets', function () {
+  var allowed = /^https?:\/\/(www\.w3\.org|tizen\.org|local\/tvhub|api\.open-meteo\.com|geocoding-api\.open-meteo\.com|www\.franceinfo\.fr)/;
   text.forEach(function (f) {
     var urls = fs.readFileSync(f, 'utf8').match(/https?:\/\/[^\s"'<>)]+/g) || [];
     urls.forEach(function (u) { assert.ok(allowed.test(u), path.relative(ROOT, f) + ' -> ' + u); });
@@ -161,15 +183,20 @@ test('aucune simulation incluse dans app/', function () {
     assert.ok(fs.readFileSync(f, 'utf8').indexOf('tizen-mock') === -1, path.relative(ROOT, f));
   });
 });
-test('config.xml : privilèges publics attendus uniquement, pas d’accès réseau', function () {
+test('config.xml : privilèges publics attendus, accès réseau limité aux 3 sources', function () {
   var x = fs.readFileSync(path.join(APP, 'config.xml'), 'utf8');
   var privs = (x.match(/privilege name="([^"]+)"/g) || []).map(function (m) { return m.split('"')[1]; }).sort();
   assert.deepStrictEqual(privs, [
     'http://tizen.org/privilege/application.info',
     'http://tizen.org/privilege/application.launch',
+    'http://tizen.org/privilege/internet',
     'http://tizen.org/privilege/tv.inputdevice'
   ]);
-  assert.ok(!/<access\b/.test(x), 'balise <access> présente');
+  var origins = (x.match(/<access origin="([^"]+)"/g) || []).map(function (m) { return m.split('"')[1]; }).sort();
+  assert.deepStrictEqual(origins, NET_ORIGINS.slice().sort());
+  assert.ok(!/origin="\*"/.test(x), 'accès réseau ouvert à tous les sites');
+  var csp = fs.readFileSync(path.join(APP, 'index.html'), 'utf8').match(/connect-src ([^;]+);/)[1].trim().split(/\s+/).sort();
+  assert.deepStrictEqual(csp, NET_ORIGINS.slice().sort());
   assert.ok(/<tizen:profile name="tv-samsung"\/>/.test(x));
 });
 test('compatibilité moteur Chromium M85 (Tizen 6.5)', function () {

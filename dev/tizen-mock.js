@@ -39,6 +39,20 @@
     base.push(['MockExtr' + n + '.App', 'Application ' + i, true, i <= 5 ? fakeIcon(String(i), '#5b3df5') : '']);
   }
 
+  // Données FICTIVES des widgets (la simulation ne contacte aucun service réseau).
+  window.__widgetsMock = {
+    place: 'Paris (simulation)',
+    weather: { temp: 14, code: 2, days: [
+      { date: '2026-10-20', code: 2, max: 16, min: 9 }, { date: '2026-10-21', code: 0, max: 15, min: 8 },
+      { date: '2026-10-22', code: 63, max: 12, min: 9 }, { date: '2026-10-23', code: 3, max: 13, min: 8 },
+      { date: '2026-10-24', code: 0, max: 16, min: 7 }] },
+    news: [
+      { title: 'Titre d\u2019exemple n°1 (simulation)', category: 'Sport', time: Date.now() - 20 * 60000 },
+      { title: 'Titre d\u2019exemple n°2 (simulation)', category: 'Culture', time: Date.now() - 65 * 60000 },
+      { title: 'Titre d\u2019exemple n°3 (simulation)', category: 'France', time: Date.now() - 130 * 60000 },
+      { title: 'Titre d\u2019exemple n°4 (simulation)', category: 'Tech', time: Date.now() - 200 * 60000 }]
+  };
+
   window.__launches = [];
   window.tizen = {
     __mock: true,
