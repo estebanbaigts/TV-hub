@@ -17,7 +17,11 @@ APP_ID="tvhubPerso.TVHub"
 
 IP="${1:-$(cat "$IP_FILE" 2>/dev/null || true)}"
 if [ -n "$IP" ]; then
-  "$SDB" connect "$IP:26101" >/dev/null 2>&1 || true
+  # sdb se bloque parfois après une veille de la TV : on relance son service si besoin.
+  if ! "$SDB" connect "$IP:26101" 2>&1 | grep -q "connected to"; then
+    "$SDB" kill-server >/dev/null 2>&1 || true
+    "$SDB" connect "$IP:26101" >/dev/null 2>&1 || true
+  fi
   echo "$IP" > "$IP_FILE"
 fi
 
